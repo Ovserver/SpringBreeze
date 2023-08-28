@@ -1,0 +1,5 @@
+﻿  Player.cpp
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\Game2\Player.cpp(199,41): warning C4804: '/': 연산에 'bool' 형식을 사용하는 것은 안전하지 않습니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\Game2\Player.cpp(205,42): warning C4804: '/': 연산에 'bool' 형식을 사용하는 것은 안전하지 않습니다.
+     C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\\Build\Game2.lib 라이브러리 및 C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\\Build\Game2.exp 개체를 생성하고 있습니다.
+  Game2.vcxproj -> C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\Build\Game2.exe

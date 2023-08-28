@@ -1,0 +1,24 @@
+﻿  Camera.cpp
+  Direct3D11.cpp
+  GameObject.cpp
+  Gui.cpp
+  Input.cpp
+  ObCircle.cpp
+  ObImage.cpp
+  ObLine.cpp
+  ObRect.cpp
+  ObStar.cpp
+  Random.cpp
+  Shader.cpp
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\GameObject.cpp(94,34): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\ObImage.cpp(174,19): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\ObImage.cpp(175,19): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\ObImage.cpp(217,29): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\ObImage.cpp(218,29): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Texture.cpp
+  Timer.cpp
+  Utility.cpp
+  Window.cpp
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\Texture.cpp(29,68): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\2DFrameWork\Texture.cpp(30,69): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  2DFrameWork.vcxproj -> C:\Users\user\Desktop\DirectX11_0825\SpringBreeze\Build\2DFrameWork\2DFrameWork.lib

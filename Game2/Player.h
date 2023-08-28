@@ -2,7 +2,14 @@
 #define NUM_SPRITE_COUNT 12
 enum class PlayerState
 {
-	NONE, MOVE, DASH, SLIDE, JUMP, OUCH, OVER
+	NONE, 
+	MOVE,
+	DASH, 
+	CROUCH, 
+	SLIDE,
+	JUMP, 
+	OUCH, 
+	OVER
 };
 
 class Player : public ObImage
@@ -13,39 +20,53 @@ public:
 
 public:
 	void Init();
-	void Release() { delete[] mSprites; };
+	void Release() {};
 	void Update();
+	void LateUpdate();
 	void Render();
-	void SpritePosUpdate();
+	void UpdateSpritePos();
 	void Active(PlayerState state);
 private:
 	bool	isRight;
+	bool	isCrouch;
 	bool	isJump;
 	bool	isMove;
+	bool	isDash;
+	bool	isHovering;
+	bool	isInhole;
 	bool	jumpable;
-	float	comboCount;
 	float	slideTime;
 	float	upVector;
+	float	fowardVector;
+	float	cmdTime;
+	const float	btweenCmdTime = 0.2f;
 
-	ObImage** mSprites;
+	vector<ObImage*> mSprites;
 	ObImage kirby_none_L;
 	ObImage kirby_none_R;
 	ObImage kirby_move_L;
 	ObImage kirby_move_R;
 	ObImage kirby_dash_L;
 	ObImage kirby_dash_R;
+	ObImage kirby_crouch_L;
+	ObImage kirby_crouch_R;
 	ObImage kirby_slide_L;
 	ObImage kirby_slide_R;
 	ObImage kirby_jump_L;
 	ObImage kirby_jump_R;
+	ObImage kirby_hover_L;
+	ObImage kirby_hover_R;
+	ObImage kirby_inhole_L;
+	ObImage kirby_inhole_R;
 	ObImage kirby_ouch_L;
 	ObImage kirby_ouch_R;
 
 	ComboMap Dash_L;
 	ComboMap Dash_R;
-	ComboMap Slide_L;
-	ComboMap Slide_R;
+	ComboMap Slide;
 private:
-	void UpdateMove();
+	void ChangeSprite(ObImage* sprite);
+	void UpdateAnim();
+	void UpdateAnimFSM();
 };
 
