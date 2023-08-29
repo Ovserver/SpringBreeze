@@ -47,6 +47,10 @@ using namespace SimpleMath;
 #include "../Libs/ImGui/ImGuiFileDialog.h"
 #include "../Libs/ImGui/ImGuiFileDialogConfig.h"
 
+//Fmod
+#include "../Libs/Fmod/fmod.hpp"
+#pragma comment(lib, "../Libs/Fmod/fmodL_vc.lib")
+
 //Macro(Pascal)
 #define Check(hr)			{ assert(SUCCEEDED(hr)); }
 #define SafeRelease(p)		{ if(p){ (p)->Release(); (p) = nullptr; } }
@@ -82,6 +86,7 @@ extern Application app;//Extern Global
 #include "Shader.h"
 #include "Random.h"
 #include "Texture.h"
+#include "Sound.h"
 #include "GameObject.h"
 
 #include "Camara.h"
@@ -101,9 +106,10 @@ extern Application app;//Extern Global
 #define	D3D			Direct3D11::GetInstance()
 #define	WIN			Window::GetInstance()
 #define	GUI			Gui::GetInstance()
-#define CAM         Camera::GetInstance()
+//#define CAM         Camera::GetInstance()
 #define INPUT		Input::GetInstance()
 #define TIMER		Timer::GetInstance()
 #define DELTA		Timer::GetInstance()->GetDeltaTime()
 #define RANDOM		Random::GetInstance()
 #define TEXTURE		Texture::GetInstance()
+#define SOUND		Sound::GetInstance()

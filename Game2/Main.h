@@ -4,14 +4,22 @@
 #define NUM_SCORETEXT 6
 #define NUM_SAFETYTEXT 2
 
+enum StageColliderNum
+{
+	STAGE_1_1_GROUND = 8,
+	STAGE_1_1_WALL_L = 5,
+	STAGE_1_1_WALL_R = 3,
+	STAGE_1_1_SLOPE = 1,
+};
+
 enum class FoodType {
-	NONE, HP, SAFETYUP, DRIVE
+	HP, FOOLHP, ONEUP
 };
 
 struct Item {
 	static const int FoodFrame = 17;
 	ObImage image;
-	FoodType type = FoodType::NONE;
+	FoodType type = FoodType::HP;
 	bool active = true;
 };
 class Main : public Scene
@@ -19,31 +27,22 @@ class Main : public Scene
 private:
 	Player mainPlayer;
 
+	ObImage	UI_normal;
 	ObImage bg1;
-	ObImage plane[NUM_PLANE];
-	ObImage planeImg[NUM_PLANE];
-	ObImage	player;
-	ObImage kirby_none_L;
-	ObImage kirby_none_R;
-	ObImage kirby_move_L;
-	ObImage kirby_move_R;
-	ObImage kirby_drive;
-	ObImage kirby_slide;
-	ObImage kirby_jump_L;
-	ObImage kirby_jump_R;
-	ObImage kirby_ouch;
-	ObImage drive_effect;
-	ObImage enemy;
-	Item*	food;
-	ObImage ui;
+	ObImage	bg1_sub;
+	ObImage stage_1_1;
+	ObRect	stage_1_1_coll_ground[STAGE_1_1_GROUND];
+	ObRect	stage_1_1_coll_wall_L[STAGE_1_1_WALL_L];
+	ObRect	stage_1_1_coll_wall_R[STAGE_1_1_WALL_R];
+	ObRect	stage_1_1_coll_slope[STAGE_1_1_SLOPE];
+	Item* food;
 	Text	scoreText[NUM_SCORETEXT];
 	Text	safetyText[NUM_SAFETYTEXT];
-	ObRect	hpBar;
-	ObRect	boostBar;
-	ObImage	gameoverUI;
+	ObRect	HpBar;
+	ObImage	leftWall;
+	ObImage	rightWall;
+	Camera	camUI;
 	int		score;
-	float	maxHp = 100;
-	float	hp;
 public:
 	Main();
 	~Main();

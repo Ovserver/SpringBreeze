@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "MecanimManager.h"
+#include "GameManager.h"
 
 int MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
 

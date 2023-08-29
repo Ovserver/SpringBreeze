@@ -14,12 +14,11 @@ void Player::Init()
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
-	STATE = PlayerState::NONE;
+	STATE = PlayerState::IDLE;
 	hp = 100;
 
-	mSprites.push_back(&kirby_none_L);
-	mSprites.push_back(&kirby_none_L);
-	mSprites.push_back(&kirby_none_R);
+	mSprites.push_back(&kirby_idle_L);
+	mSprites.push_back(&kirby_idle_R);
 	mSprites.push_back(&kirby_move_L);
 	mSprites.push_back(&kirby_move_R);
 	mSprites.push_back(&kirby_dash_L);
@@ -30,96 +29,133 @@ void Player::Init()
 	mSprites.push_back(&kirby_crouch_R);
 	mSprites.push_back(&kirby_jump_L);
 	mSprites.push_back(&kirby_jump_R);
+	mSprites.push_back(&kirby_jumpdown_L);
+	mSprites.push_back(&kirby_jumpdown_R);
 	mSprites.push_back(&kirby_ouch_L);
 	mSprites.push_back(&kirby_ouch_R);
 
-	kirby_none_L.LoadFile(L"kirby_none_L.png");
-	kirby_none_L.SetScale().x = kirby_none_L.imageSize.x / 3.0f * VALUE_SCALE_IMG;
-	kirby_none_L.SetScale().y = kirby_none_L.imageSize.y * VALUE_SCALE_IMG;
-	kirby_none_L.SetPivot() = OFFSET_B;
-	kirby_none_L.maxFrame.x = 3;
-	kirby_none_L.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 3);
-	kirby_none_L.isVisible = false;
+	/*
+	kirby_idle_L.SetParentT(*this);
+	kirby_idle_R.SetParentT(*this);
+	kirby_move_L.SetParentT(*this);
+	kirby_move_R.SetParentT(*this);
+	kirby_dash_L.SetParentT(*this);
+	kirby_dash_R.SetParentT(*this);
+	kirby_crouch_L.SetParentT(*this);
+	kirby_crouch_R.SetParentT(*this);
+	kirby_slide_L.SetParentT(*this);
+	kirby_slide_R.SetParentT(*this);
+	kirby_jump_L.SetParentT(*this);
+	kirby_jump_R.SetParentT(*this);
+	kirby_jumpdown_L.SetParentT(*this);
+	kirby_jumpdown_R.SetParentT(*this);
+	kirby_hover_L.SetParentT(*this);
+	kirby_hover_R.SetParentT(*this);
+	*/
 
-	kirby_none_R.LoadFile(L"kirby_none_R.png");
-	kirby_none_R.SetScale().x = kirby_none_L.imageSize.x / 3.0f * VALUE_SCALE_IMG;
-	kirby_none_R.SetScale().y = kirby_none_L.imageSize.y * VALUE_SCALE_IMG;
-	kirby_none_R.SetPivot() = OFFSET_B;
-	kirby_none_R.maxFrame.x = 3;
-	kirby_none_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 3);
+	kirby_idle_L.LoadFile(L"kirby_none_L.png");
+	kirby_idle_L.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE;
+	kirby_idle_L.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
+	kirby_idle_L.SetPivot() = OFFSET_B;
+	kirby_idle_L.maxFrame.x = 3;
+	kirby_idle_L.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 3);
+	kirby_idle_L.isVisible = false;
+
+	kirby_idle_R.LoadFile(L"kirby_none_R.png");
+	kirby_idle_R.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE;
+	kirby_idle_R.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
+	kirby_idle_R.SetPivot() = OFFSET_B;
+	kirby_idle_R.maxFrame.x = 3;
+	kirby_idle_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 3);
 	//kirby_none_R.isVisible = false;
 
 	kirby_move_L.LoadFile(L"kirby_move_L.png");
-	kirby_move_L.SetScale().x = kirby_move_L.imageSize.x / 6.0f * VALUE_SCALE_IMG;
-	kirby_move_L.SetScale().y = kirby_move_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_move_L.SetScale().x = kirby_move_L.imageSize.x / 6.0f * IMG_SCALE;
+	kirby_move_L.SetScale().y = kirby_move_L.imageSize.y * IMG_SCALE;
 	kirby_move_L.SetPivot() = OFFSET_B;
 	kirby_move_L.maxFrame.x = 6;
 	kirby_move_L.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 12);
 	kirby_move_L.isVisible = false;
 
 	kirby_move_R.LoadFile(L"kirby_move_R.png");
-	kirby_move_R.SetScale().x = kirby_move_R.imageSize.x / 6.0f * VALUE_SCALE_IMG;
-	kirby_move_R.SetScale().y = kirby_move_R.imageSize.y * VALUE_SCALE_IMG;
+	kirby_move_R.SetScale().x = kirby_move_R.imageSize.x / 6.0f * IMG_SCALE;
+	kirby_move_R.SetScale().y = kirby_move_R.imageSize.y * IMG_SCALE;
 	kirby_move_R.SetPivot() = OFFSET_B;
 	kirby_move_R.maxFrame.x = 6;
 	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
 	kirby_move_R.isVisible = false;
 
 	kirby_dash_L.LoadFile(L"kirby_dash_L.png");
-	kirby_dash_L.SetScale().x = kirby_dash_L.imageSize.x / 6.0f * VALUE_SCALE_IMG;
-	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_dash_L.SetScale().x = kirby_dash_L.imageSize.x / 6.0f * IMG_SCALE;
+	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y * IMG_SCALE;
 	kirby_dash_L.SetPivot() = OFFSET_B;
 	kirby_dash_L.maxFrame.x = 6;
 	kirby_dash_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
 	kirby_dash_L.isVisible = false;
 
 	kirby_dash_R.LoadFile(L"kirby_dash_R.png");
-	kirby_dash_R.SetScale().x = kirby_dash_R.imageSize.x / 6.0f * VALUE_SCALE_IMG;
-	kirby_dash_R.SetScale().y = kirby_dash_R.imageSize.y * VALUE_SCALE_IMG;
+	kirby_dash_R.SetScale().x = kirby_dash_R.imageSize.x / 6.0f * IMG_SCALE;
+	kirby_dash_R.SetScale().y = kirby_dash_R.imageSize.y * IMG_SCALE;
 	kirby_dash_R.SetPivot() = OFFSET_B;
 	kirby_dash_R.maxFrame.x = 6;
 	kirby_dash_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
 	kirby_dash_R.isVisible = false;
 
 	kirby_slide_L.LoadFile(L"kirby_slide_L.png");
-	kirby_slide_L.SetScale().x = kirby_slide_L.imageSize.x * VALUE_SCALE_IMG;
-	kirby_slide_L.SetScale().y = kirby_slide_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_slide_L.SetScale().x = kirby_slide_L.imageSize.x * IMG_SCALE;
+	kirby_slide_L.SetScale().y = kirby_slide_L.imageSize.y * IMG_SCALE;
 	kirby_slide_L.SetPivot() = OFFSET_B;
 	kirby_slide_L.isVisible = false;
 
 	kirby_slide_R.LoadFile(L"kirby_slide_R.png");
-	kirby_slide_R.SetScale().x = kirby_slide_R.imageSize.x * VALUE_SCALE_IMG;
-	kirby_slide_R.SetScale().y = kirby_slide_R.imageSize.y * VALUE_SCALE_IMG;
+	kirby_slide_R.SetScale().x = kirby_slide_R.imageSize.x * IMG_SCALE;
+	kirby_slide_R.SetScale().y = kirby_slide_R.imageSize.y * IMG_SCALE;
 	kirby_slide_R.SetPivot() = OFFSET_B;
 	kirby_slide_R.isVisible = false;
 
 	kirby_crouch_L.LoadFile(L"kirby_crouch_L.png");
-	kirby_crouch_L.SetScale().x = kirby_crouch_L.imageSize.x * VALUE_SCALE_IMG;
-	kirby_crouch_L.SetScale().y = kirby_crouch_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_crouch_L.SetScale().x = kirby_crouch_L.imageSize.x * IMG_SCALE;
+	kirby_crouch_L.SetScale().y = kirby_crouch_L.imageSize.y * IMG_SCALE;
 	kirby_crouch_L.SetPivot() = OFFSET_B;
 	kirby_crouch_L.isVisible = false;
 
 	kirby_crouch_R.LoadFile(L"kirby_crouch_R.png");
-	kirby_crouch_R.SetScale().x = kirby_crouch_R.imageSize.x * VALUE_SCALE_IMG;
-	kirby_crouch_R.SetScale().y = kirby_crouch_R.imageSize.y * VALUE_SCALE_IMG;
+	kirby_crouch_R.SetScale().x = kirby_crouch_R.imageSize.x * IMG_SCALE;
+	kirby_crouch_R.SetScale().y = kirby_crouch_R.imageSize.y * IMG_SCALE;
 	kirby_crouch_R.SetPivot() = OFFSET_B;
 	kirby_crouch_R.isVisible = false;
 
 	kirby_jump_L.LoadFile(L"kirby_jump_L.png");
-	kirby_jump_L.SetScale().x = kirby_jump_L.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	kirby_jump_L.SetScale().y = kirby_jump_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_jump_L.SetScale().x = kirby_jump_L.imageSize.x / 5.0f * IMG_SCALE;
+	kirby_jump_L.SetScale().y = kirby_jump_L.imageSize.y * IMG_SCALE;
 	kirby_jump_L.SetPivot() = OFFSET_B;
-	kirby_jump_L.maxFrame.x = 5;
-	kirby_jump_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+	kirby_jump_L.uv.x = 1.0f / 5 * 4;
+	kirby_jump_L.uv.z = 1;
 	kirby_jump_L.isVisible = false;
 
 	kirby_jump_R.LoadFile(L"kirby_jump_R.png");
-	kirby_jump_R.SetScale().x = kirby_jump_R.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	kirby_jump_R.SetScale().y = kirby_jump_R.imageSize.y * VALUE_SCALE_IMG;
+	kirby_jump_R.SetScale().x = kirby_jump_R.imageSize.x / 5.0f * IMG_SCALE;
+	kirby_jump_R.SetScale().y = kirby_jump_R.imageSize.y * IMG_SCALE;
 	kirby_jump_R.SetPivot() = OFFSET_B;
-	kirby_jump_R.maxFrame.x = 5;
-	kirby_jump_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+	kirby_jump_R.uv.x = 0;
+	kirby_jump_R.uv.z = 1.0f / 5;
 	kirby_jump_R.isVisible = false;
+
+	kirby_jumpdown_L.LoadFile(L"kirby_jump_L.png");
+	kirby_jumpdown_L.SetScale().x = kirby_jumpdown_L.imageSize.x / 5.0f * IMG_SCALE;
+	kirby_jumpdown_L.SetScale().y = kirby_jumpdown_L.imageSize.y * IMG_SCALE;
+	kirby_jumpdown_L.SetPivot() = OFFSET_B;
+	kirby_jumpdown_L.maxFrame.x = 5;
+	kirby_jumpdown_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+	kirby_jumpdown_L.isVisible = false;
+
+	kirby_jumpdown_R.LoadFile(L"kirby_jump_R.png");
+	kirby_jumpdown_R.SetScale().x = kirby_jumpdown_R.imageSize.x / 5.0f * IMG_SCALE;
+	kirby_jumpdown_R.SetScale().y = kirby_jumpdown_R.imageSize.y * IMG_SCALE;
+	kirby_jumpdown_R.SetPivot() = OFFSET_B;
+	kirby_jumpdown_R.maxFrame.x = 5;
+	kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+	kirby_jumpdown_R.isVisible = false;
 
 	//kirby_hover_L.LoadFile(L"kirby_jump_R.png");
 	//kirby_hover_L.SetScale().x = kirby_hover_L.imageSize.x / 5.0f * VALUE_SCALE_IMG;
@@ -154,8 +190,8 @@ void Player::Init()
 	//kirby_inhole_R.isVisible = false;
 
 	kirby_ouch_L.LoadFile(L"riderkirby_attack.png");
-	kirby_ouch_L.SetScale().x = kirby_ouch_L.imageSize.x / 4.0f * VALUE_SCALE_IMG;
-	kirby_ouch_L.SetScale().y = kirby_ouch_L.imageSize.y * VALUE_SCALE_IMG;
+	kirby_ouch_L.SetScale().x = kirby_ouch_L.imageSize.x / 4.0f * IMG_SCALE;
+	kirby_ouch_L.SetScale().y = kirby_ouch_L.imageSize.y * IMG_SCALE;
 	kirby_ouch_L.SetPivot() = OFFSET_B;
 	kirby_ouch_L.maxFrame.x = 4;
 	kirby_ouch_L.ChangeAnim(ANIMSTATE::LOOP, 1 / 24.0f);
@@ -164,6 +200,7 @@ void Player::Init()
 	Dash_L.comboMaps[0] = VK_LEFT;
 	Dash_L.comboMaps[1] = VK_LEFT;
 	Dash_L.comboLength = 2;
+
 	Dash_R.comboMaps[0] = VK_RIGHT;
 	Dash_R.comboMaps[1] = VK_RIGHT;
 	Dash_R.comboLength = 2;
@@ -179,14 +216,20 @@ void Player::Update()
 	else { SetWorldPosY(0); isJump = false; jumpable = true; }
 
 	if (!isJump) upVector = 0;
+
 	MoveWorldPos(DOWN * 1.0f * upVector);
 
 	if (cmdTime > 0)
 		cmdTime -= DELTA;
+	else
+	{
+		cmdTime = 0;
+		MecanimManager::ComboClear();
+	}
 	if (slideTime > 0)
 	{
 		MoveWorldPos(RIGHT * 1.0f * fowardVector);
-		fowardVector *= 1-DELTA * 2.5f;
+		fowardVector *= 1 - DELTA * 2.5f;
 		slideTime -= DELTA;
 	}
 	// arrow up key
@@ -206,7 +249,7 @@ void Player::Update()
 	{
 		if (isDash) isDash = false;
 		MecanimManager::ComboInput(VK_LEFT);
-		if (btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
+		if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
 		{
 			MecanimManager::ComboClear();
 			isDash = true;
@@ -218,7 +261,7 @@ void Player::Update()
 	{
 		if (isDash) isDash = false;
 		MecanimManager::ComboInput(VK_RIGHT);
-		if (btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_R))
+		if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_R))
 		{
 			MecanimManager::ComboClear();
 			isDash = true;
@@ -247,7 +290,7 @@ void Player::Update()
 	if (INPUT->KeyDown('A'))
 	{
 		MecanimManager::ComboInput('A');
-		if (btweenCmdTime > 0 && 
+		if (btweenCmdTime > 0 &&
 			!isMove &&
 			!isJump &&
 			slideTime <= 0 &&
@@ -259,14 +302,15 @@ void Player::Update()
 			if (isRight) fowardVector = 0.04f;
 			else fowardVector = -0.04f;
 		}
-		else if (jumpable && slideTime <= 0){
+		else if (jumpable && slideTime <= 0) {
 			isJump = true;
 			jumpable = false;
 			upVector = -0.08f;
-			kirby_jump_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			kirby_jump_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+			kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			kirby_jumpdown_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
 		}
 	}
+	app.maincam->SetWorldPos(GetWorldPos());
 	UpdateSpritePos();
 }
 
@@ -278,8 +322,8 @@ void Player::LateUpdate()
 
 void Player::Render()
 {
-	kirby_none_L.Render();
-	kirby_none_R.Render();
+	kirby_idle_L.Render();
+	kirby_idle_R.Render();
 	kirby_move_L.Render();
 	kirby_move_R.Render();
 	kirby_dash_L.Render();
@@ -290,6 +334,8 @@ void Player::Render()
 	kirby_crouch_R.Render();
 	kirby_jump_L.Render();
 	kirby_jump_R.Render();
+	kirby_jumpdown_L.Render();
+	kirby_jumpdown_R.Render();
 	kirby_hover_L.Render();
 	kirby_hover_R.Render();
 	kirby_inhole_L.Render();
@@ -300,9 +346,9 @@ void Player::Render()
 
 void Player::UpdateSpritePos()
 {
-	UpdateMatrix();
-	kirby_none_L.SetWorldPos(GetWorldPos());
-	kirby_none_R.SetWorldPos(GetWorldPos());
+	//UpdateMatrix();
+	kirby_idle_L.SetWorldPos(GetWorldPos());
+	kirby_idle_R.SetWorldPos(GetWorldPos());
 	kirby_move_L.SetWorldPos(GetWorldPos());
 	kirby_move_R.SetWorldPos(GetWorldPos());
 	kirby_dash_L.SetWorldPos(GetWorldPos());
@@ -313,6 +359,8 @@ void Player::UpdateSpritePos()
 	kirby_crouch_R.SetWorldPos(GetWorldPos());
 	kirby_jump_L.SetWorldPos(GetWorldPos());
 	kirby_jump_R.SetWorldPos(GetWorldPos());
+	kirby_jumpdown_L.SetWorldPos(GetWorldPos());
+	kirby_jumpdown_R.SetWorldPos(GetWorldPos());
 	kirby_hover_L.SetWorldPos(GetWorldPos());
 	kirby_hover_R.SetWorldPos(GetWorldPos());
 	kirby_inhole_L.SetWorldPos(GetWorldPos());
@@ -345,9 +393,9 @@ void Player::UpdateAnim()
 {
 	switch (STATE)
 	{
-	case PlayerState::NONE:
-		if (isRight) ChangeSprite(&kirby_none_R);
-		else ChangeSprite(&kirby_none_L);
+	case PlayerState::IDLE:
+		if (isRight) ChangeSprite(&kirby_idle_R);
+		else ChangeSprite(&kirby_idle_L);
 		break;
 	case PlayerState::MOVE:
 		if (isRight) ChangeSprite(&kirby_move_R);
@@ -369,6 +417,10 @@ void Player::UpdateAnim()
 		if (isRight) ChangeSprite(&kirby_jump_R);
 		else ChangeSprite(&kirby_jump_L);
 		break;
+	case PlayerState::JUMPDOWN:
+		if (isRight) ChangeSprite(&kirby_jumpdown_R);
+		else ChangeSprite(&kirby_jumpdown_L);
+		break;
 	case PlayerState::OUCH:
 		break;
 	case PlayerState::OVER:
@@ -382,7 +434,10 @@ void Player::UpdateAnimFSM()
 {
 	if (isJump)
 	{
-		STATE = PlayerState::JUMP;
+		if (upVector < -0.009)
+			STATE = PlayerState::JUMP;
+		else
+			STATE = PlayerState::JUMPDOWN;
 	}
 	else if (isDash)
 	{
@@ -402,6 +457,6 @@ void Player::UpdateAnimFSM()
 	}
 	else
 	{
-		STATE = PlayerState::NONE;
+		STATE = PlayerState::IDLE;
 	}
 }

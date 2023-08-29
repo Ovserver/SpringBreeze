@@ -2,12 +2,19 @@
 #define NUM_SPRITE_COUNT 12
 enum class PlayerState
 {
-	NONE, 
+	IDLE, 
 	MOVE,
 	DASH, 
 	CROUCH, 
 	SLIDE,
-	JUMP, 
+	JUMP,
+	JUMPDOWN,
+	INHOLE,
+	INHOLEIT,
+	INHOLEIT_MOVE,
+	INHOLEIT_JUMP,
+	CONSUME,
+	COPY,
 	OUCH, 
 	OVER
 };
@@ -39,11 +46,11 @@ private:
 	float	upVector;
 	float	fowardVector;
 	float	cmdTime;
-	const float	btweenCmdTime = 0.2f;
+	const float	btweenCmdTime = 0.4f;
 
 	vector<ObImage*> mSprites;
-	ObImage kirby_none_L;
-	ObImage kirby_none_R;
+	ObImage kirby_idle_L;
+	ObImage kirby_idle_R;
 	ObImage kirby_move_L;
 	ObImage kirby_move_R;
 	ObImage kirby_dash_L;
@@ -54,6 +61,8 @@ private:
 	ObImage kirby_slide_R;
 	ObImage kirby_jump_L;
 	ObImage kirby_jump_R;
+	ObImage kirby_jumpdown_L;
+	ObImage kirby_jumpdown_R;
 	ObImage kirby_hover_L;
 	ObImage kirby_hover_R;
 	ObImage kirby_inhole_L;

@@ -4,13 +4,13 @@
     <ClInclude Include="Main.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Text.h" />
-    <ClInclude Include="MecanimManager.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Text.cpp" />
-    <ClCompile Include="MecanimManager.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Player.cpp" />
   </ItemGroup>
 </Project>

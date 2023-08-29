@@ -56,6 +56,9 @@
     <ClInclude Include="ObStar.h">
       <Filter>GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="Sound.h">
+      <Filter>System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="System">
@@ -116,6 +119,9 @@
     </ClCompile>
     <ClCompile Include="ObStar.cpp">
       <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.cpp">
+      <Filter>System</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
