@@ -16,6 +16,11 @@ Main::~Main()
 void Main::Init()
 {
 	camUI.UpdateMatrix();
+	
+	GameManager::AddStage(L"stage_1-1.png", L"stage_1-1_collider.png");
+	GameManager::ChangeMainStage(L"stage_1-1.png");
+
+	GameManager::MainStage->SetImagePos(-100, 100);	
 
 	UI_normal.LoadFile(L"UI_normal.png");
 	bg1.LoadFile(L"bg_stage_1-1.png");
@@ -41,10 +46,13 @@ void Main::Init()
 
 	stage_1_1.SetScale().x = stage_1_1.imageSize.x * IMG_SCALE;
 	stage_1_1.SetScale().y = stage_1_1.imageSize.y * IMG_SCALE;
+	stage_1_1.SetWorldPosX(-100);
+	stage_1_1.SetWorldPosY(100);
 	stage_1_1.SetPivot() = OFFSET_LT;
 
 	stage_1_1_col.SetScale().x = stage_1_1_col.imageSize.x * IMG_SCALE;
 	stage_1_1_col.SetScale().y = stage_1_1_col.imageSize.y * IMG_SCALE;
+	stage_1_1_col.SetWorldPos(stage_1_1.GetWorldPos());
 	//stage_1_1_col.SetWorldPosX();
 	//stage_1_1_col.SetWorldPosY();
 	stage_1_1_col.SetPivot() = OFFSET_LT;
@@ -71,7 +79,6 @@ void Main::Init()
 	}
 
 	mainPlayer.Init();
-	mainPlayer.SetPixelInfo(stage_1_1_col, WSstage_1_1_col);
 }
 
 void Main::Release()
@@ -84,18 +91,21 @@ void Main::Update()
 {
 	ImGui::SliderInt("POS_X", &posX, 0, 808);
 	ImGui::SliderInt("POS_Y", &posY, 0, 192);
-		
-	cout << mainPlayer.pointColor.w << endl;
-	cout << mainPlayer.pointColor.x << endl;
-	cout << mainPlayer.pointColor.y << endl;
-	cout << mainPlayer.pointColor.z << endl << endl;
+	
+	if(ImGui::Button("Debug Mode"))
+	{
+		GameManager::DebugMode = !GameManager::DebugMode;
+	}
+	//cout << mainPlayer.pointColor.w << endl;
+	//cout << mainPlayer.pointColor.x << endl;
+	//cout << mainPlayer.pointColor.y << endl;
+	//cout << mainPlayer.pointColor.z << endl << endl;
 
 	//cout << "TextureDataR" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 2) << endl;
 	//cout << "TextureDataG" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 1) << endl;
 	//cout << "TextureDataB" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4) << endl;
-	cout << endl;
+	
 	mainPlayer.Update();
-	mainPlayer.SetPixelInfo(stage_1_1_col, WSstage_1_1_col);
 
 	if (INPUT->KeyDown('R'))
 	{
@@ -113,8 +123,9 @@ void Main::Render()
 {
 	bg1.Render();
 	bg1_sub.Render();
+	GameManager::Render();
 	//stage_1_1.Render();
-	stage_1_1_col.Render();
+	//stage_1_1_col.Render();
 	mainPlayer.Render();
 	UI_normal.Render(&camUI);
 }

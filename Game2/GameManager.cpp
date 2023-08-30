@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "GameManager.h"
 
-int MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
-
+int		MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
+bool	GameManager::DebugMode = false;
+Stage* GameManager::MainStage = nullptr;
+vector<Stage*> GameManager::StageList;
 
 void MecanimManager::ComboInput(int keyCode)
 {
@@ -29,4 +31,37 @@ bool MecanimManager::ComboMatch(ComboMap* comboMap)
 			return false;
 	}
 	return true;
+}
+
+bool GameManager::IsColorMatch(Color& cl, float r, float g, float b)
+{
+	if (cl.x == r && cl.y == g && cl.z == b)
+		return true;
+	else
+		return false;
+}
+
+void GameManager::AddStage(wstring _stageImgName, wstring _stageColName)
+{
+	Stage* tmp = new Stage(_stageImgName, _stageColName);
+	StageList.push_back(tmp);
+}
+
+void GameManager::Render()
+{
+	MainStage->stageImage->Render();
+	MainStage->stageCollider->Render();
+}
+
+bool GameManager::ChangeMainStage(wstring _stageImgName)
+{
+	for (size_t i = 0; i < StageList.size(); i++)
+	{
+		if (StageList[i]->stageImgName == _stageImgName)
+		{
+			MainStage = StageList[i];
+			return true;
+		}
+	}
+	return false;
 }

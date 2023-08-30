@@ -6,11 +6,12 @@ void Player::Init()
 {
 	isRight = true;
 	isCrouch = false;
-	isJump = false;
+	isJump = true;
 	isMove = false;
 	isDash = false;
 	jumpable = true;
 	slideTime = 0;
+	slidePower = 1.2f;
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
@@ -25,8 +26,12 @@ void Player::Init()
 	mSprites.push_back(&kirby_dash_R);
 	mSprites.push_back(&kirby_slide_L);
 	mSprites.push_back(&kirby_slide_R);
+	mSprites.push_back(&kirby_hover_L);
+	mSprites.push_back(&kirby_hover_R);
 	mSprites.push_back(&kirby_crouch_L);
 	mSprites.push_back(&kirby_crouch_R);
+	mSprites.push_back(&kirby_inhole_L);
+	mSprites.push_back(&kirby_inhole_R);
 	mSprites.push_back(&kirby_jump_L);
 	mSprites.push_back(&kirby_jump_R);
 	mSprites.push_back(&kirby_jumpdown_L);
@@ -157,37 +162,33 @@ void Player::Init()
 	kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 	kirby_jumpdown_R.isVisible = false;
 
-	//kirby_hover_L.LoadFile(L"kirby_jump_R.png");
-	//kirby_hover_L.SetScale().x = kirby_hover_L.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	//kirby_hover_L.SetScale().y = kirby_hover_L.imageSize.y * VALUE_SCALE_IMG;
-	//kirby_hover_L.SetPivot() = OFFSET_B;
-	//kirby_hover_L.maxFrame.x = 5;
-	//kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-	//kirby_hover_L.isVisible = false;
+	kirby_hover_L.LoadFile(L"kirby_hover_L.png");
+	kirby_hover_L.SetScale().x = kirby_hover_L.imageSize.x / 2.0f * IMG_SCALE;
+	kirby_hover_L.SetScale().y = kirby_hover_L.imageSize.y * IMG_SCALE;
+	kirby_hover_L.SetPivot() = OFFSET_B;
+	kirby_hover_L.maxFrame.x = 2;
+	kirby_hover_L.isVisible = false;
 
-	//kirby_hover_R.LoadFile(L"kirby_jump_R.png");
-	//kirby_hover_R.SetScale().x = kirby_hover_R.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	//kirby_hover_R.SetScale().y = kirby_hover_R.imageSize.y * VALUE_SCALE_IMG;
-	//kirby_hover_R.SetPivot() = OFFSET_B;
-	//kirby_hover_R.maxFrame.x = 5;
-	//kirby_hover_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-	//kirby_hover_R.isVisible = false;
+	kirby_hover_R.LoadFile(L"kirby_hover_R.png");
+	kirby_hover_R.SetScale().x = kirby_hover_R.imageSize.x / 2.0f * IMG_SCALE;
+	kirby_hover_R.SetScale().y = kirby_hover_R.imageSize.y * IMG_SCALE;
+	kirby_hover_R.SetPivot() = OFFSET_B;
+	kirby_hover_R.maxFrame.x = 2;
+	kirby_hover_R.isVisible = false;
 
-	//kirby_inhole_L.LoadFile(L"kirby_jump_R.png");
-	//kirby_inhole_L.SetScale().x = kirby_inhole_L.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	//kirby_inhole_L.SetScale().y = kirby_inhole_L.imageSize.y * VALUE_SCALE_IMG;
-	//kirby_inhole_L.SetPivot() = OFFSET_B;
-	//kirby_inhole_L.maxFrame.x = 5;
-	//kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-	//kirby_inhole_L.isVisible = false;
+	kirby_inhole_L.LoadFile(L"kirby_inhole_L.png");
+	kirby_inhole_L.SetScale().x = kirby_inhole_L.imageSize.x / 2.0f * IMG_SCALE;
+	kirby_inhole_L.SetScale().y = kirby_inhole_L.imageSize.y * IMG_SCALE;
+	kirby_inhole_L.SetPivot() = OFFSET_B;
+	kirby_inhole_L.maxFrame.x = 2;
+	kirby_inhole_L.isVisible = false;
 
-	//kirby_inhole_R.LoadFile(L"kirby_jump_R.png");
-	//kirby_inhole_R.SetScale().x = kirby_inhole_R.imageSize.x / 5.0f * VALUE_SCALE_IMG;
-	//kirby_inhole_R.SetScale().y = kirby_inhole_R.imageSize.y * VALUE_SCALE_IMG;
-	//kirby_inhole_R.SetPivot() = OFFSET_B;
-	//kirby_inhole_R.maxFrame.x = 5;
-	//kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-	//kirby_inhole_R.isVisible = false;
+	kirby_inhole_R.LoadFile(L"kirby_inhole_R.png");
+	kirby_inhole_R.SetScale().x = kirby_inhole_R.imageSize.x / 2.0f * IMG_SCALE;
+	kirby_inhole_R.SetScale().y = kirby_inhole_R.imageSize.y * IMG_SCALE;
+	kirby_inhole_R.SetPivot() = OFFSET_B;
+	kirby_inhole_R.maxFrame.x = 2;
+	kirby_inhole_R.isVisible = false;
 
 	kirby_ouch_L.LoadFile(L"riderkirby_attack.png");
 	kirby_ouch_L.SetScale().x = kirby_ouch_L.imageSize.x / 4.0f * IMG_SCALE;
@@ -208,23 +209,34 @@ void Player::Init()
 	Slide.comboMaps[0] = 'A';
 	Slide.comboMaps[1] = VK_DOWN;
 	Slide.comboLength = 2;
+
+	UpdatePointColor(GameManager::MainStage);
 }
 
 void Player::Update()
 {
 	//debug set
+	if (GameManager::DebugMode)
 	{
 		if (INPUT->KeyPress(VK_UP))
 			MoveWorldPos(UP * DELTA * 300.0f);
 		if (INPUT->KeyPress(VK_DOWN))
 			MoveWorldPos(DOWN * DELTA * 300.0f);
 	}
-	//if (GetWorldPos().y >= 0) { upVector += DELTA * 0.2f; }
-	//else { SetWorldPosY(0); isJump = false; jumpable = true; }
+	else
+	{
+		upVector += DELTA * 10.0f;
+	}
+	if (!GameManager::IsColorMatch(pointColor, 255, 0, 255) && !GameManager::IsColorMatch(pointColor, 0, 255, 0))
+	{
+		isJump = false;
+		jumpable = true;
+		isHovering = false;
+		upVector = 0;
+	}
 
-	if (!isJump) upVector = 0;
-
-	MoveWorldPos(DOWN * 1.0f * upVector);
+	if (upVector > 0.35f && isHovering) upVector = 0.35f;
+	MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
 
 	if (cmdTime > 0)
 		cmdTime -= DELTA;
@@ -235,10 +247,12 @@ void Player::Update()
 	}
 	if (slideTime > 0)
 	{
-		MoveWorldPos(RIGHT * 1.0f * fowardVector);
-		fowardVector *= 1 - DELTA * 2.5f;
 		slideTime -= DELTA;
+		//fowardVector *= slideTime / maxSlideTime;
 	}
+	else
+		fowardVector = 0;
+	MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
 	// arrow up key
 	if (INPUT->KeyDown(VK_UP)) { MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime; }
 
@@ -278,13 +292,23 @@ void Player::Update()
 	}
 	if (INPUT->KeyPress(VK_LEFT) && slideTime <= 0)
 	{
-		MoveWorldPos(LEFT * DELTA * 300.0f * (isDash / 2.0f + 1));
+		if (!GameManager::IsColorMatch(pointColor, 0, 255, 0))
+			MoveWorldPos(LEFT * DELTA * 100.0f * (isDash / 2.0f + 1));
+		else
+			MoveWorldPos(RIGHT);
 		isRight = false;
 		isMove = true;
 	}
 	else if (INPUT->KeyPress(VK_RIGHT) && slideTime <= 0)
 	{
-		MoveWorldPos(RIGHT * DELTA * 300.0f * (isDash / 2.0f + 1));
+		if (!GameManager::IsColorMatch(pointColor, 0, 255, 0))
+			MoveWorldPos(RIGHT * DELTA * 100.0f * (isDash / 2.0f + 1));
+		else
+			while (GameManager::IsColorMatch(pointColor, 0, 255, 0))
+			{
+				MoveWorldPos(LEFT);
+				UpdatePointColor(GameManager::MainStage);
+			}
 		isRight = true;
 		isMove = true;
 	}
@@ -304,18 +328,57 @@ void Player::Update()
 			MecanimManager::ComboMatch(&Slide))
 		{
 			MecanimManager::ComboClear();
-			slideTime = 0.6f;
+			slideTime = maxSlideTime;
 			cmdTime = 0;
-			if (isRight) fowardVector = 0.04f;
-			else fowardVector = -0.04f;
+			if (isRight) fowardVector = slidePower;
+			else fowardVector = -slidePower;
+		}
+		else if (GameManager::IsColorMatch(pointColor, 255, 0, 255))
+		{
+			isHovering = true;
+			jumpable = false;
+			isJump = false;
 		}
 		else if (jumpable && slideTime <= 0) {
+			MoveWorldPos(UP);
 			isJump = true;
 			jumpable = false;
-			upVector = -0.08f;
+			upVector = -3.5f;
 			kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			kirby_jumpdown_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
 		}
+		if (isHovering)
+		{
+			upVector = -2.0f;
+			kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			kirby_hover_R.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+		}
+	}
+	// B key
+	if (INPUT->KeyDown('B'))
+	{
+		if (isHovering)
+		{
+			isHovering = false;
+		}
+	}
+	if (INPUT->KeyPress('B'))
+	{
+		if (!isHovering &&
+			slideTime <= 0)
+		{
+			if (!isInhole)
+			{
+				kirby_inhole_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				cout << "anim" << endl;
+			}
+			isInhole = true;
+		}
+	}
+	else
+	{
+		if (isInhole) isInhole = false;
 	}
 	app.maincam->SetWorldPos(GetWorldPos());
 	UpdateSpritePos();
@@ -323,6 +386,7 @@ void Player::Update()
 
 void Player::LateUpdate()
 {
+	UpdatePointColor(GameManager::MainStage);
 	UpdateAnimFSM();
 	UpdateAnim();
 }
@@ -337,6 +401,10 @@ void Player::Render()
 	kirby_dash_R.Render();
 	kirby_slide_L.Render();
 	kirby_slide_R.Render();
+	kirby_hover_L.Render();
+	kirby_hover_R.Render();
+	kirby_inhole_L.Render();
+	kirby_inhole_R.Render();
 	kirby_crouch_L.Render();
 	kirby_crouch_R.Render();
 	kirby_jump_L.Render();
@@ -362,6 +430,10 @@ void Player::UpdateSpritePos()
 	kirby_dash_R.SetWorldPos(GetWorldPos());
 	kirby_slide_L.SetWorldPos(GetWorldPos());
 	kirby_slide_R.SetWorldPos(GetWorldPos());
+	kirby_hover_L.SetWorldPos(GetWorldPos());
+	kirby_hover_R.SetWorldPos(GetWorldPos());
+	kirby_inhole_L.SetWorldPos(GetWorldPos());
+	kirby_inhole_R.SetWorldPos(GetWorldPos());
 	kirby_crouch_L.SetWorldPos(GetWorldPos());
 	kirby_crouch_R.SetWorldPos(GetWorldPos());
 	kirby_jump_L.SetWorldPos(GetWorldPos());
@@ -385,25 +457,31 @@ void Player::Active(PlayerState state)
 	}
 }
 
-void Player::SetPixelInfo(ObImage& stageInfo, wstring& fileName)
+void Player::UpdatePointColor(Stage* stage)
 {
-	stageInfo.GetWorldPos();
+	ObImage* stageInfo = stage->stageCollider;
+	wstring fileName = stage->stageColName;
 
-	Vector2 PixelPos = GetWorldPos() - stageInfo.GetWorldPos();
-	PixelPos -= stageInfo.GetWorldPos();
-	if (PixelPos.y > 0) PixelPos *= -1;
+	Vector2 PixelPos = GetWorldPos() - stageInfo->GetWorldPos();
+	PixelPos /= IMG_SCALE;
+	// boundary values [X (0 ~ imageSize.x), Y (0 ~ imageSize.y)]
+	if (PixelPos.x < 0) PixelPos.x = 0;
+	if (PixelPos.x > stageInfo->imageSize.x) PixelPos.x = stageInfo->imageSize.x;
+	if (PixelPos.y > 0) PixelPos.y = 0;
+	if (PixelPos.y < 0) PixelPos.y *= -1;
+	if (PixelPos.y > stageInfo->imageSize.y) PixelPos.y = stageInfo->imageSize.y;
 
-	//pointColor.w = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 3);
-	//pointColor.x = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 2);
-	//pointColor.y = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 1);
-	//pointColor.z = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4));
+	// GetPixels() : it's 0,0 Pixels pointer. is uInt8(1byte)
+	// PixelPos.x  : 1Pixel is 32bit(RGBA) but, layout info(BGRA)
+	// PixelPos.y  : Access the next row ->	Add all pixels from the previous row
 
-	pointColor.w = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 3);
-	pointColor.x = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 2);
-	pointColor.y = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 1);
-	pointColor.z = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4));
+	pointColor.w = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 3);
+	pointColor.x = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 2);
+	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
+	pointColor.z = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4));
 
-	//cout << (int)GetWorldPos().x << "  " << (int)GetWorldPos().y << endl;
+	if (GameManager::DebugMode)
+		cout << PixelPos.x << "  " << PixelPos.y << endl;
 }
 
 void Player::ChangeSprite(ObImage* sprite)
@@ -449,6 +527,14 @@ void Player::UpdateAnim()
 		if (isRight) ChangeSprite(&kirby_jumpdown_R);
 		else ChangeSprite(&kirby_jumpdown_L);
 		break;
+	case PlayerState::HOVER:
+		if (isRight) ChangeSprite(&kirby_hover_R);
+		else ChangeSprite(&kirby_hover_L);
+		break;
+	case PlayerState::INHOLE:
+		if (isRight) ChangeSprite(&kirby_inhole_R);
+		else ChangeSprite(&kirby_inhole_L);
+		break;
 	case PlayerState::OUCH:
 		break;
 	case PlayerState::OVER:
@@ -460,21 +546,22 @@ void Player::UpdateAnim()
 
 void Player::UpdateAnimFSM()
 {
-	if (isJump)
+	if (isInhole)
+	{
+		STATE = PlayerState::INHOLE;
+	}
+	else if (isJump)
 	{
 		if (upVector < -0.009)
 			STATE = PlayerState::JUMP;
 		else
 			STATE = PlayerState::JUMPDOWN;
 	}
-	else if (isDash)
+	else if (isHovering)
 	{
-		STATE = PlayerState::DASH;
+		STATE = PlayerState::HOVER;
 	}
-	else if (isMove)
-	{
-		STATE = PlayerState::MOVE;
-	}
+
 	else if (slideTime > 0)
 	{
 		STATE = PlayerState::SLIDE;
@@ -483,6 +570,18 @@ void Player::UpdateAnimFSM()
 	{
 		STATE = PlayerState::CROUCH;
 	}
+	else if (GameManager::IsColorMatch(pointColor, 255, 0, 255) || GameManager::IsColorMatch(pointColor, 0, 255, 0))
+	{
+		STATE = PlayerState::JUMPDOWN;
+	}
+	else if (isDash)
+	{
+		STATE = PlayerState::DASH;
+	}
+	else if (isMove)
+	{
+		STATE = PlayerState::MOVE;
+	}	
 	else
 	{
 		STATE = PlayerState::IDLE;

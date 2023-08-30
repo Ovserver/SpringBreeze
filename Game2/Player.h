@@ -9,6 +9,8 @@ enum class PlayerState
 	SLIDE,
 	JUMP,
 	JUMPDOWN,
+	HOVER,
+	HOVER_END,
 	INHOLE,
 	INHOLEIT,
 	INHOLEIT_MOVE,
@@ -33,7 +35,7 @@ public:
 	void Render();
 	void UpdateSpritePos();
 	void Active(PlayerState state);
-	void SetPixelInfo(ObImage& stageInfo, wstring& fileName);
+	void UpdatePointColor(Stage* stage);
 private:
 	bool	isRight;
 	bool	isCrouch;
@@ -44,6 +46,8 @@ private:
 	bool	isInhole;
 	bool	jumpable;
 	float	slideTime;
+	const float	maxSlideTime = 0.6;
+	float	slidePower;
 	float	upVector;
 	float	fowardVector;
 	float	cmdTime;
