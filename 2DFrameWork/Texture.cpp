@@ -23,14 +23,14 @@ ID3D11ShaderResourceView* Texture::LoadTexture(wstring file)
         ID3D11ShaderResourceView* temp;
         wstring path = L"../Contents/Images/" + file;
 
-        ScratchImage image;
-        LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, nullptr, image);
+        //ScratchImage image;
+        LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, nullptr, textureList[file].img);
 
-        textureList[file].textureSize.x = image.GetMetadata().width;
-        textureList[file].textureSize.y = image.GetMetadata().height;
+        textureList[file].textureSize.x = textureList[file].img.GetMetadata().width;
+        textureList[file].textureSize.y = textureList[file].img.GetMetadata().height;
 
-        HRESULT hr = CreateShaderResourceView(D3D->GetDevice(), image.GetImages(), image.GetImageCount(),
-            image.GetMetadata(), &temp);
+        HRESULT hr = CreateShaderResourceView(D3D->GetDevice(), textureList[file].img.GetImages(), textureList[file].img.GetImageCount(),
+            textureList[file].img.GetMetadata(), &temp);
         Check(hr);
 
         textureList[file].srv = temp;
@@ -61,4 +61,9 @@ bool Texture::DeleteTexture(wstring file)
 Int2 Texture::GetTextureSize(wstring file)
 {
     return textureList[file].textureSize;
+}
+
+ScratchImage& Texture::GetTextureData(wstring file)
+{
+    return textureList[file].img;
 }

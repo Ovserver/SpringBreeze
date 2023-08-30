@@ -26,11 +26,11 @@ class Main : public Scene
 {
 private:
 	Player mainPlayer;
-
 	ObImage	UI_normal;
 	ObImage bg1;
 	ObImage	bg1_sub;
 	ObImage stage_1_1;
+	ObImage stage_1_1_col;
 	ObRect	stage_1_1_coll_ground[STAGE_1_1_GROUND];
 	ObRect	stage_1_1_coll_wall_L[STAGE_1_1_WALL_L];
 	ObRect	stage_1_1_coll_wall_R[STAGE_1_1_WALL_R];

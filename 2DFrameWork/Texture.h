@@ -6,6 +6,7 @@ private:
     {
         ID3D11ShaderResourceView*   srv; //ÀÚ¿ø
         Int2                        textureSize;
+        ScratchImage                img;
     };
 
     //    first     second
@@ -17,5 +18,6 @@ public:
     ID3D11ShaderResourceView* LoadTexture(wstring file);
     bool DeleteTexture(wstring file);
     Int2 GetTextureSize(wstring file);
+    ScratchImage& GetTextureData(wstring file);
 };
 

@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Main.h"
 
+wstring WSstage_1_1_col = L"stage_1-1_collider.png";
 Main::Main()
 {
 
@@ -14,13 +15,13 @@ Main::~Main()
 }
 void Main::Init()
 {
-	mainPlayer.Init();
 	camUI.UpdateMatrix();
 
 	UI_normal.LoadFile(L"UI_normal.png");
 	bg1.LoadFile(L"bg_stage_1-1.png");
 	bg1_sub.LoadFile(L"bg_sub_stage_1-1.png");
 	stage_1_1.LoadFile(L"stage_1-1.png");
+	stage_1_1_col.LoadFile(L"stage_1-1_collider.png");
 
 	UI_normal.SetScale().x = UI_normal.imageSize.x * IMG_SCALE;
 	UI_normal.SetScale().y = UI_normal.imageSize.y * IMG_SCALE;
@@ -40,6 +41,13 @@ void Main::Init()
 
 	stage_1_1.SetScale().x = stage_1_1.imageSize.x * IMG_SCALE;
 	stage_1_1.SetScale().y = stage_1_1.imageSize.y * IMG_SCALE;
+	stage_1_1.SetPivot() = OFFSET_LT;
+
+	stage_1_1_col.SetScale().x = stage_1_1_col.imageSize.x * IMG_SCALE;
+	stage_1_1_col.SetScale().y = stage_1_1_col.imageSize.y * IMG_SCALE;
+	//stage_1_1_col.SetWorldPosX();
+	//stage_1_1_col.SetWorldPosY();
+	stage_1_1_col.SetPivot() = OFFSET_LT;
 
 	for (size_t i = 0; i < STAGE_1_1_GROUND; i++)
 	{
@@ -61,16 +69,34 @@ void Main::Init()
 		stage_1_1_coll_slope[i].collider = COLLIDER::RECT;
 		stage_1_1_coll_slope[i].isFilled = false;
 	}
+
+	mainPlayer.Init();
+	mainPlayer.SetPixelInfo(stage_1_1_col, WSstage_1_1_col);
 }
 
 void Main::Release()
 {
 
 }
-float iv;
+int posX = 0;
+int posY = 0;
 void Main::Update()
 {
+	ImGui::SliderInt("POS_X", &posX, 0, 808);
+	ImGui::SliderInt("POS_Y", &posY, 0, 192);
+		
+	cout << mainPlayer.pointColor.w << endl;
+	cout << mainPlayer.pointColor.x << endl;
+	cout << mainPlayer.pointColor.y << endl;
+	cout << mainPlayer.pointColor.z << endl << endl;
+
+	//cout << "TextureDataR" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 2) << endl;
+	//cout << "TextureDataG" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 1) << endl;
+	//cout << "TextureDataB" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4) << endl;
+	cout << endl;
 	mainPlayer.Update();
+	mainPlayer.SetPixelInfo(stage_1_1_col, WSstage_1_1_col);
+
 	if (INPUT->KeyDown('R'))
 	{
 		this->Init();
@@ -87,7 +113,8 @@ void Main::Render()
 {
 	bg1.Render();
 	bg1_sub.Render();
-	stage_1_1.Render();
+	//stage_1_1.Render();
+	stage_1_1_col.Render();
 	mainPlayer.Render();
 	UI_normal.Render(&camUI);
 }

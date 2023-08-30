@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "MecanimManager.h"
+#include "GameManager.h"
 #include "Player.h"
 
 void Player::Init()
@@ -212,8 +212,15 @@ void Player::Init()
 
 void Player::Update()
 {
-	if (GetWorldPos().y >= 0) { upVector += DELTA * 0.2f; }
-	else { SetWorldPosY(0); isJump = false; jumpable = true; }
+	//debug set
+	{
+		if (INPUT->KeyPress(VK_UP))
+			MoveWorldPos(UP * DELTA * 300.0f);
+		if (INPUT->KeyPress(VK_DOWN))
+			MoveWorldPos(DOWN * DELTA * 300.0f);
+	}
+	//if (GetWorldPos().y >= 0) { upVector += DELTA * 0.2f; }
+	//else { SetWorldPosY(0); isJump = false; jumpable = true; }
 
 	if (!isJump) upVector = 0;
 
@@ -376,6 +383,27 @@ void Player::Active(PlayerState state)
 		jumpable = false;
 		upVector = -0.1f;
 	}
+}
+
+void Player::SetPixelInfo(ObImage& stageInfo, wstring& fileName)
+{
+	stageInfo.GetWorldPos();
+
+	Vector2 PixelPos = GetWorldPos() - stageInfo.GetWorldPos();
+	PixelPos -= stageInfo.GetWorldPos();
+	if (PixelPos.y > 0) PixelPos *= -1;
+
+	//pointColor.w = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 3);
+	//pointColor.x = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 2);
+	//pointColor.y = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4) + 1);
+	//pointColor.z = (unsigned int)*((TEXTURE->GetTextureData(ws).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo.imageSize.x * 4));
+
+	pointColor.w = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 3);
+	pointColor.x = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 2);
+	pointColor.y = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4) + 1);
+	pointColor.z = (unsigned int)*((TEXTURE->GetTextureData(fileName).GetPixels() + (int)GetWorldPos().x * 4 + (int)GetWorldPos().y * -1 * stageInfo.imageSize.x * 4));
+
+	//cout << (int)GetWorldPos().x << "  " << (int)GetWorldPos().y << endl;
 }
 
 void Player::ChangeSprite(ObImage* sprite)

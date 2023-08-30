@@ -22,9 +22,9 @@ enum class PlayerState
 class Player : public ObImage
 {
 public:
+	Color		pointColor;
 	PlayerState	STATE;
 	int			hp;
-
 public:
 	void Init();
 	void Release() {};
@@ -33,6 +33,7 @@ public:
 	void Render();
 	void UpdateSpritePos();
 	void Active(PlayerState state);
+	void SetPixelInfo(ObImage& stageInfo, wstring& fileName);
 private:
 	bool	isRight;
 	bool	isCrouch;
