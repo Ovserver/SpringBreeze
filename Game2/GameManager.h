@@ -1,35 +1,37 @@
 #pragma once
 #define MAX_COMBO_HISTORY 5
-struct Stage 
+class Stage
 {
-	ObImage*	stageImage;
-	ObImage*	stageCollider;
-	wstring		stageImgName;
-	wstring		stageColName;
-
+public:
+	ObImage*	image;
+	ObImage*	collider;
+	wstring		imageFName;
+	wstring		colFName;
+	vector<Enemy*>	enemyList;
+public:
 	Stage(wstring _stageImgName, wstring _stageColName)
 	{
-		stageImage = new ObImage();
-		stageCollider = new ObImage();
-		stageImgName = _stageImgName;
-		stageColName = _stageColName;
-		stageImage->LoadFile(stageImgName);
-		stageCollider->LoadFile(stageColName);
+		image = new ObImage();
+		collider = new ObImage();
+		imageFName = _stageImgName;
+		colFName = _stageColName;
+		image->LoadFile(imageFName);
+		collider->LoadFile(colFName);
 
-		stageImage->SetScale().x = stageImage->imageSize.x * IMG_SCALE;
-		stageImage->SetScale().y = stageImage->imageSize.y * IMG_SCALE;
-		stageImage->SetPivot() = OFFSET_LT;
+		image->SetScale().x = image->imageSize.x * IMG_SCALE;
+		image->SetScale().y = image->imageSize.y * IMG_SCALE;
+		image->SetPivot() = OFFSET_LT;
 
-		stageCollider->SetScale().x = stageImage->imageSize.x * IMG_SCALE;
-		stageCollider->SetScale().y = stageImage->imageSize.y * IMG_SCALE;
-		stageCollider->SetPivot() = OFFSET_LT;
+		collider->SetScale().x = image->imageSize.x * IMG_SCALE;
+		collider->SetScale().y = image->imageSize.y * IMG_SCALE;
+		collider->SetPivot() = OFFSET_LT;
 	}
 	void SetImagePos(float x, float y)
 	{
-		stageImage->SetWorldPosX(x);
-		stageImage->SetWorldPosY(y);
-		stageCollider->SetWorldPosX(x);
-		stageCollider->SetWorldPosY(y);
+		image->SetWorldPosX(x);
+		image->SetWorldPosY(y);
+		collider->SetWorldPosX(x);
+		collider->SetWorldPosY(y);
 	}
 };
 struct ComboMap

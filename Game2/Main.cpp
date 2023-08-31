@@ -16,11 +16,11 @@ Main::~Main()
 void Main::Init()
 {
 	camUI.UpdateMatrix();
-	
+
 	GameManager::AddStage(L"stage_1-1.png", L"stage_1-1_collider.png");
 	GameManager::ChangeMainStage(L"stage_1-1.png");
 
-	GameManager::MainStage->SetImagePos(-100, 100);	
+	GameManager::MainStage->SetImagePos(-100, 100);
 
 	UI_normal.LoadFile(L"UI_normal.png");
 	bg1.LoadFile(L"bg_stage_1-1.png");
@@ -38,8 +38,7 @@ void Main::Init()
 
 	bg1_sub.SetScale().x = bg1_sub.imageSize.x * IMG_SCALE;
 	bg1_sub.SetScale().y = bg1_sub.imageSize.y / 4 * IMG_SCALE;
-	bg1_sub.SetLocalPosX(-96 * IMG_SCALE);
-	bg1_sub.SetLocalPosY(-8 * IMG_SCALE);
+
 	bg1_sub.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6, false);
 	bg1_sub.maxFrame.y = 4;
 	bg1_sub.SetParentT(bg1);
@@ -91,20 +90,20 @@ void Main::Update()
 {
 	ImGui::SliderInt("POS_X", &posX, 0, 808);
 	ImGui::SliderInt("POS_Y", &posY, 0, 192);
-	
-	if(ImGui::Button("Debug Mode"))
+
+	if (ImGui::Button("Debug Mode"))
 	{
 		GameManager::DebugMode = !GameManager::DebugMode;
 	}
 	//cout << mainPlayer.pointColor.w << endl;
-	//cout << mainPlayer.pointColor.x << endl;
-	//cout << mainPlayer.pointColor.y << endl;
-	//cout << mainPlayer.pointColor.z << endl << endl;
+	cout << mainPlayer.pointColor.x << endl;
+	cout << mainPlayer.pointColor.y << endl;
+	cout << mainPlayer.pointColor.z << endl << endl;
 
 	//cout << "TextureDataR" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 2) << endl;
 	//cout << "TextureDataG" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4 + 1) << endl;
 	//cout << "TextureDataB" <<(unsigned int)*(TEXTURE->GetTextureData(L"stage_1-1_collider_test.png").GetPixels() + posX * 4 + posY * 808 * 4) << endl;
-	
+
 	mainPlayer.Update();
 
 	if (INPUT->KeyDown('R'))
@@ -112,10 +111,16 @@ void Main::Update()
 		this->Init();
 	}
 
+	app.maincam->SetWorldPos(mainPlayer.GetWorldPos());
+	app.maincam->SetWorldPosY(-140);
 }
 
 void Main::LateUpdate()
 {
+	bg1.SetWorldPos(app.maincam->GetWorldPos());
+	bg1.SetWorldPos(app.maincam->GetWorldPos());
+	bg1_sub.SetWorldPosX(app.maincam->GetWorldPos().x + -96 * IMG_SCALE);
+	bg1_sub.SetWorldPosY(app.maincam->GetWorldPos().y + -8 * IMG_SCALE);
 	mainPlayer.LateUpdate();
 }
 
@@ -138,7 +143,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPWSTR param, in
 {
 	app.SetAppName(L"Game2");
 	app.SetInstance(instance);
-	app.InitWidthHeight(512.0f, 480.0f); // 248, 265
+	app.InitWidthHeight(512.0f, 450.0f); // 248, 265
 	WIN->Create();
 	Main* main = new Main();
 	int wParam = (int)WIN->Run(main);

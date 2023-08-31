@@ -54,7 +54,7 @@ public:
 	Color       color;
 	COLLIDER	collider;
 
-protected:
+public:
 	virtual void UpdateMatrix();
 
 public:

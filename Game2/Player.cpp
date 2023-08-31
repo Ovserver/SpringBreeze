@@ -227,7 +227,7 @@ void Player::Update()
 	{
 		upVector += DELTA * 10.0f;
 	}
-	if (!GameManager::IsColorMatch(pointColor, 255, 0, 255) && !GameManager::IsColorMatch(pointColor, 0, 255, 0))
+	if (LANDING_AREA)
 	{
 		isJump = false;
 		jumpable = true;
@@ -236,7 +236,11 @@ void Player::Update()
 	}
 
 	if (upVector > 0.35f && isHovering) upVector = 0.35f;
-	MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+
+	if (AIR_AREA || DESCENT_INTERPOL_AREA)
+	{
+		MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+	}
 
 	if (cmdTime > 0)
 		cmdTime -= DELTA;
@@ -252,6 +256,7 @@ void Player::Update()
 	}
 	else
 		fowardVector = 0;
+
 	MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
 	// arrow up key
 	if (INPUT->KeyDown(VK_UP)) { MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime; }
@@ -290,32 +295,33 @@ void Player::Update()
 		}
 		cmdTime = btweenCmdTime;
 	}
-	if (INPUT->KeyPress(VK_LEFT) && slideTime <= 0)
+	if (INPUT->KeyPress(VK_LEFT) && slideTime <= 0 && !isCrouch)
 	{
-		if (!GameManager::IsColorMatch(pointColor, 0, 255, 0))
-			MoveWorldPos(LEFT * DELTA * 100.0f * (isDash / 2.0f + 1));
-		else
-			MoveWorldPos(RIGHT);
 		isRight = false;
 		isMove = true;
+		MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
+
 	}
-	else if (INPUT->KeyPress(VK_RIGHT) && slideTime <= 0)
+	else if (INPUT->KeyPress(VK_RIGHT) && slideTime <= 0 && !isCrouch)
 	{
-		if (!GameManager::IsColorMatch(pointColor, 0, 255, 0))
-			MoveWorldPos(RIGHT * DELTA * 100.0f * (isDash / 2.0f + 1));
-		else
-			while (GameManager::IsColorMatch(pointColor, 0, 255, 0))
-			{
-				MoveWorldPos(LEFT);
-				UpdatePointColor(GameManager::MainStage);
-			}
 		isRight = true;
 		isMove = true;
+		MoveWorldPos(RIGHT * DELTA * 150.0f * (isDash / 2.0f + 1));
 	}
 	else
 	{
 		isDash = false;
 		isMove = false;
+	}
+	while (GameManager::IsColorMatch(pointColor, 0, 255, 0))
+	{
+		MoveWorldPos(LEFT);
+		UpdatePointColor(GameManager::MainStage);
+	}
+	while (GameManager::IsColorMatch(pointColor, 0, 0, 255))
+	{
+		MoveWorldPos(RIGHT);
+		UpdatePointColor(GameManager::MainStage);
 	}
 	// A key
 	if (INPUT->KeyDown('A'))
@@ -333,17 +339,19 @@ void Player::Update()
 			if (isRight) fowardVector = slidePower;
 			else fowardVector = -slidePower;
 		}
-		else if (GameManager::IsColorMatch(pointColor, 255, 0, 255))
+		else if (AIR_AREA)
 		{
 			isHovering = true;
 			jumpable = false;
 			isJump = false;
+			isDash = false;
 		}
 		else if (jumpable && slideTime <= 0) {
 			MoveWorldPos(UP);
+			MoveWorldPos(UP);
 			isJump = true;
 			jumpable = false;
-			upVector = -3.5f;
+			upVector = -4.6f;
 			kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			kirby_jumpdown_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
 		}
@@ -380,7 +388,22 @@ void Player::Update()
 	{
 		if (isInhole) isInhole = false;
 	}
-	app.maincam->SetWorldPos(GetWorldPos());
+	if (RISE_INTERPOL_AREA)
+	{
+		while (RISE_INTERPOL_AREA)
+		{
+			MoveWorldPos(UP);
+			UpdatePointColor(GameManager::MainStage);
+		}
+	}
+	if (DESCENT_INTERPOL_AREA && !isJump)
+	{
+		while (DESCENT_INTERPOL_AREA)
+		{
+			MoveWorldPos(DOWN);
+			UpdatePointColor(GameManager::MainStage);
+		}
+	}
 	UpdateSpritePos();
 }
 
@@ -459,11 +482,12 @@ void Player::Active(PlayerState state)
 
 void Player::UpdatePointColor(Stage* stage)
 {
-	ObImage* stageInfo = stage->stageCollider;
-	wstring fileName = stage->stageColName;
+	ObImage* stageInfo = stage->collider;
+	wstring fileName = stage->colFName;
 
 	Vector2 PixelPos = GetWorldPos() - stageInfo->GetWorldPos();
 	PixelPos /= IMG_SCALE;
+
 	// boundary values [X (0 ~ imageSize.x), Y (0 ~ imageSize.y)]
 	if (PixelPos.x < 0) PixelPos.x = 0;
 	if (PixelPos.x > stageInfo->imageSize.x) PixelPos.x = stageInfo->imageSize.x;
@@ -474,7 +498,6 @@ void Player::UpdatePointColor(Stage* stage)
 	// GetPixels() : it's 0,0 Pixels pointer. is uInt8(1byte)
 	// PixelPos.x  : 1Pixel is 32bit(RGBA) but, layout info(BGRA)
 	// PixelPos.y  : Access the next row ->	Add all pixels from the previous row
-
 	pointColor.w = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 3);
 	pointColor.x = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 2);
 	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
@@ -561,7 +584,6 @@ void Player::UpdateAnimFSM()
 	{
 		STATE = PlayerState::HOVER;
 	}
-
 	else if (slideTime > 0)
 	{
 		STATE = PlayerState::SLIDE;
@@ -581,7 +603,7 @@ void Player::UpdateAnimFSM()
 	else if (isMove)
 	{
 		STATE = PlayerState::MOVE;
-	}	
+	}
 	else
 	{
 		STATE = PlayerState::IDLE;

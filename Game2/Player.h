@@ -1,5 +1,12 @@
 #pragma once
 #define NUM_SPRITE_COUNT 12
+#define AIR_AREA GameManager::IsColorMatch(pointColor, 255, 0, 255)
+#define LEFT_WALL_AREA GameManager::IsColorMatch(pointColor, 0, 255, 0)
+#define RIGHT_WALL_AREA GameManager::IsColorMatch(pointColor, 0, 0, 255)
+#define LANDING_AREA GameManager::IsColorMatch(pointColor, 255, 0, 0)
+#define RISE_INTERPOL_AREA GameManager::IsColorMatch(pointColor, 0, 0, 0)
+#define DESCENT_INTERPOL_AREA GameManager::IsColorMatch(pointColor, 0, 255, 255)
+
 enum class PlayerState
 {
 	IDLE, 

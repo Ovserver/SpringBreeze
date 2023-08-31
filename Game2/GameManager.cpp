@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Enemy.h"
 #include "GameManager.h"
 
 int		MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
@@ -49,15 +50,15 @@ void GameManager::AddStage(wstring _stageImgName, wstring _stageColName)
 
 void GameManager::Render()
 {
-	MainStage->stageImage->Render();
-	MainStage->stageCollider->Render();
+	MainStage->image->Render();
+	MainStage->collider->Render();
 }
 
 bool GameManager::ChangeMainStage(wstring _stageImgName)
 {
 	for (size_t i = 0; i < StageList.size(); i++)
 	{
-		if (StageList[i]->stageImgName == _stageImgName)
+		if (StageList[i]->imageFName == _stageImgName)
 		{
 			MainStage = StageList[i];
 			return true;

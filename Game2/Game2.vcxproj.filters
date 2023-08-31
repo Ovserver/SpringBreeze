@@ -6,11 +6,15 @@
     <ClInclude Include="Text.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Item.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Item.cpp" />
   </ItemGroup>
 </Project>
