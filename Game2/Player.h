@@ -23,6 +23,7 @@ enum class PlayerState
 	INHOLEIT_MOVE,
 	INHOLEIT_JUMP,
 	CONSUME,
+	SPITOUT,
 	COPY,
 	OUCH, 
 	OVER
@@ -60,6 +61,7 @@ private:
 	float	cmdTime;
 	const float	btweenCmdTime = 0.4f;
 
+	ObRect	inholeArea;
 	vector<ObImage*> mSprites;
 	ObImage kirby_idle_L;
 	ObImage kirby_idle_R;

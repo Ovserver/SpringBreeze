@@ -1,39 +1,35 @@
 #pragma once
 #define MAX_COMBO_HISTORY 5
+#define MAINSTAGE GameManager::MainStage
+#define MAINPLAYER GameManager::MainPlayer
+
+class Enemy;
+class Player;
 class Stage
 {
 public:
-	ObImage*	image;
-	ObImage*	collider;
-	wstring		imageFName;
-	wstring		colFName;
-	vector<Enemy*>	enemyList;
+	vector<ObImage*>	mBGImage;
+	vector<Vector2>		mBGImagePos;
+	vector<ObImage*>	mImage;
+	vector<Vector2>		mImagePos;
+	ObImage*	mCollider;
+	wstring		mImageFName;
+	wstring		mColFName;
+	vector<Enemy*>	mEnemyList;
 public:
-	Stage(wstring _stageImgName, wstring _stageColName)
-	{
-		image = new ObImage();
-		collider = new ObImage();
-		imageFName = _stageImgName;
-		colFName = _stageColName;
-		image->LoadFile(imageFName);
-		collider->LoadFile(colFName);
-
-		image->SetScale().x = image->imageSize.x * IMG_SCALE;
-		image->SetScale().y = image->imageSize.y * IMG_SCALE;
-		image->SetPivot() = OFFSET_LT;
-
-		collider->SetScale().x = image->imageSize.x * IMG_SCALE;
-		collider->SetScale().y = image->imageSize.y * IMG_SCALE;
-		collider->SetPivot() = OFFSET_LT;
-	}
-	void SetImagePos(float x, float y)
-	{
-		image->SetWorldPosX(x);
-		image->SetWorldPosY(y);
-		collider->SetWorldPosX(x);
-		collider->SetWorldPosY(y);
-	}
+	Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName);
+	void Init();
+	void Update();
+	void Render();
+	void SetImagePos(float x, float y);
+	void SetBGImagePos(float x, float y);
+	void AddImage(wstring _stageImgName, Vector2 imagePos);
+	void AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame = 1, bool isVertical = false);
+	void AddEnemy(Enemy* enemy);
+	void EnemyCollisionCheck(GameObject* col);
+	bool InholeCheck();
 };
+
 struct ComboMap
 {
 	int comboMaps[MAX_COMBO_HISTORY];
@@ -43,12 +39,11 @@ class GameManager {
 public:
 	static bool DebugMode;
 	static Stage* MainStage;
+	static Player* MainPlayer;
 	static vector<Stage*> StageList;
 public:
 	static bool IsColorMatch(Color& cl, float r, float g, float b);
-	static void AddStage(wstring stageImgName, wstring stageColName);
 	static bool ChangeMainStage(wstring stageFname);
-	static void Render();
 };
 class MecanimManager
 {

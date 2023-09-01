@@ -11,7 +11,7 @@ void Player::Init()
 	isDash = false;
 	jumpable = true;
 	slideTime = 0;
-	slidePower = 1.2f;
+	slidePower = 1.8f;
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
@@ -58,6 +58,12 @@ void Player::Init()
 	kirby_hover_R.SetParentT(*this);
 	*/
 
+	inholeArea.SetScale().x = 50 * IMG_SCALE;
+	inholeArea.SetScale().y = 25 * IMG_SCALE;
+	inholeArea.SetPivot() = OFFSET_B;
+	inholeArea.collider = COLLIDER::RECT;
+	inholeArea.isFilled = false;
+
 	kirby_idle_L.LoadFile(L"kirby_none_L.png");
 	kirby_idle_L.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE;
 	kirby_idle_L.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
@@ -79,7 +85,7 @@ void Player::Init()
 	kirby_move_L.SetScale().y = kirby_move_L.imageSize.y * IMG_SCALE;
 	kirby_move_L.SetPivot() = OFFSET_B;
 	kirby_move_L.maxFrame.x = 6;
-	kirby_move_L.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 12);
+	kirby_move_L.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 10);
 	kirby_move_L.isVisible = false;
 
 	kirby_move_R.LoadFile(L"kirby_move_R.png");
@@ -87,7 +93,7 @@ void Player::Init()
 	kirby_move_R.SetScale().y = kirby_move_R.imageSize.y * IMG_SCALE;
 	kirby_move_R.SetPivot() = OFFSET_B;
 	kirby_move_R.maxFrame.x = 6;
-	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
+	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 10);
 	kirby_move_R.isVisible = false;
 
 	kirby_dash_L.LoadFile(L"kirby_dash_L.png");
@@ -95,7 +101,7 @@ void Player::Init()
 	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y * IMG_SCALE;
 	kirby_dash_L.SetPivot() = OFFSET_B;
 	kirby_dash_L.maxFrame.x = 6;
-	kirby_dash_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
+	kirby_dash_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 18);
 	kirby_dash_L.isVisible = false;
 
 	kirby_dash_R.LoadFile(L"kirby_dash_R.png");
@@ -103,7 +109,7 @@ void Player::Init()
 	kirby_dash_R.SetScale().y = kirby_dash_R.imageSize.y * IMG_SCALE;
 	kirby_dash_R.SetPivot() = OFFSET_B;
 	kirby_dash_R.maxFrame.x = 6;
-	kirby_dash_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
+	kirby_dash_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 18);
 	kirby_dash_R.isVisible = false;
 
 	kirby_slide_L.LoadFile(L"kirby_slide_L.png");
@@ -222,194 +228,203 @@ void Player::Update()
 			MoveWorldPos(UP * DELTA * 300.0f);
 		if (INPUT->KeyPress(VK_DOWN))
 			MoveWorldPos(DOWN * DELTA * 300.0f);
+		if (INPUT->KeyPress(VK_LEFT))
+			MoveWorldPos(LEFT * DELTA * 300.0f);
+		if (INPUT->KeyPress(VK_RIGHT))
+			MoveWorldPos(RIGHT * DELTA * 300.0f);
 	}
 	else
 	{
 		upVector += DELTA * 10.0f;
-	}
-	if (LANDING_AREA)
-	{
-		isJump = false;
-		jumpable = true;
-		isHovering = false;
-		upVector = 0;
-	}
 
-	if (upVector > 0.35f && isHovering) upVector = 0.35f;
-
-	if (AIR_AREA || DESCENT_INTERPOL_AREA)
-	{
-		MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
-	}
-
-	if (cmdTime > 0)
-		cmdTime -= DELTA;
-	else
-	{
-		cmdTime = 0;
-		MecanimManager::ComboClear();
-	}
-	if (slideTime > 0)
-	{
-		slideTime -= DELTA;
-		//fowardVector *= slideTime / maxSlideTime;
-	}
-	else
-		fowardVector = 0;
-
-	MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
-	// arrow up key
-	if (INPUT->KeyDown(VK_UP)) { MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime; }
-
-	// arrow down key
-	if (INPUT->KeyDown(VK_DOWN)) { MecanimManager::ComboInput(VK_DOWN);	cmdTime = btweenCmdTime; }
-	if (INPUT->KeyPress(VK_DOWN))
-	{
-		MecanimManager::ComboInput(VK_DOWN);
-		isCrouch = true;
-	}
-	else isCrouch = false;
-
-	// arrow left key & right key
-	if (INPUT->KeyDown(VK_LEFT))
-	{
-		if (isDash) isDash = false;
-		MecanimManager::ComboInput(VK_LEFT);
-		if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
+		if (LANDING_AREA)
 		{
-			MecanimManager::ComboClear();
-			isDash = true;
-			cmdTime = 0;
-		}
-		cmdTime = btweenCmdTime;
-	}
-	if (INPUT->KeyDown(VK_RIGHT))
-	{
-		if (isDash) isDash = false;
-		MecanimManager::ComboInput(VK_RIGHT);
-		if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_R))
-		{
-			MecanimManager::ComboClear();
-			isDash = true;
-			cmdTime = 0;
-		}
-		cmdTime = btweenCmdTime;
-	}
-	if (INPUT->KeyPress(VK_LEFT) && slideTime <= 0 && !isCrouch)
-	{
-		isRight = false;
-		isMove = true;
-		MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
-
-	}
-	else if (INPUT->KeyPress(VK_RIGHT) && slideTime <= 0 && !isCrouch)
-	{
-		isRight = true;
-		isMove = true;
-		MoveWorldPos(RIGHT * DELTA * 150.0f * (isDash / 2.0f + 1));
-	}
-	else
-	{
-		isDash = false;
-		isMove = false;
-	}
-	while (GameManager::IsColorMatch(pointColor, 0, 255, 0))
-	{
-		MoveWorldPos(LEFT);
-		UpdatePointColor(GameManager::MainStage);
-	}
-	while (GameManager::IsColorMatch(pointColor, 0, 0, 255))
-	{
-		MoveWorldPos(RIGHT);
-		UpdatePointColor(GameManager::MainStage);
-	}
-	// A key
-	if (INPUT->KeyDown('A'))
-	{
-		MecanimManager::ComboInput('A');
-		if (btweenCmdTime > 0 &&
-			!isMove &&
-			!isJump &&
-			slideTime <= 0 &&
-			MecanimManager::ComboMatch(&Slide))
-		{
-			MecanimManager::ComboClear();
-			slideTime = maxSlideTime;
-			cmdTime = 0;
-			if (isRight) fowardVector = slidePower;
-			else fowardVector = -slidePower;
-		}
-		else if (AIR_AREA)
-		{
-			isHovering = true;
-			jumpable = false;
 			isJump = false;
-			isDash = false;
-		}
-		else if (jumpable && slideTime <= 0) {
-			MoveWorldPos(UP);
-			MoveWorldPos(UP);
-			isJump = true;
-			jumpable = false;
-			upVector = -4.6f;
-			kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			kirby_jumpdown_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
-		}
-		if (isHovering)
-		{
-			upVector = -2.0f;
-			kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			kirby_hover_R.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
-		}
-	}
-	// B key
-	if (INPUT->KeyDown('B'))
-	{
-		if (isHovering)
-		{
+			jumpable = true;
 			isHovering = false;
+			upVector = 0;
 		}
-	}
-	if (INPUT->KeyPress('B'))
-	{
-		if (!isHovering &&
-			slideTime <= 0)
+
+		if (upVector > 0.5f && isHovering) upVector = 0.5f;
+
+		if (AIR_AREA || DESCENT_INTERPOL_AREA)
 		{
-			if (!isInhole)
+			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+		}
+
+		if (cmdTime > 0)
+			cmdTime -= DELTA;
+		else
+		{
+			cmdTime = 0;
+			MecanimManager::ComboClear();
+		}
+		if (slideTime > 0)
+		{
+			slideTime -= DELTA;
+			//fowardVector *= slideTime / maxSlideTime;
+		}
+		else
+			fowardVector = 0;
+
+		MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
+		// arrow up key
+		if (INPUT->KeyDown(VK_UP)) { MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime; }
+
+		// arrow down key
+		if (INPUT->KeyDown(VK_DOWN)) { MecanimManager::ComboInput(VK_DOWN);	cmdTime = btweenCmdTime; }
+		if (INPUT->KeyPress(VK_DOWN))
+		{
+			MecanimManager::ComboInput(VK_DOWN);
+			isCrouch = true;
+		}
+		else isCrouch = false;
+
+		// arrow left key & right key
+		if (INPUT->KeyDown(VK_LEFT))
+		{
+			if (isDash) isDash = false;
+			MecanimManager::ComboInput(VK_LEFT);
+			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
 			{
-				kirby_inhole_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
-				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-				cout << "anim" << endl;
+				MecanimManager::ComboClear();
+				isDash = true;
+				cmdTime = 0;
 			}
-			isInhole = true;
+			cmdTime = btweenCmdTime;
 		}
-	}
-	else
-	{
-		if (isInhole) isInhole = false;
-	}
-	if (RISE_INTERPOL_AREA)
-	{
-		while (RISE_INTERPOL_AREA)
+		if (INPUT->KeyDown(VK_RIGHT))
 		{
-			MoveWorldPos(UP);
+			if (isDash) isDash = false;
+			MecanimManager::ComboInput(VK_RIGHT);
+			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_R))
+			{
+				MecanimManager::ComboClear();
+				isDash = true;
+				cmdTime = 0;
+			}
+			cmdTime = btweenCmdTime;
+		}
+		if (INPUT->KeyPress(VK_LEFT) && slideTime <= 0 && !isCrouch && !isInhole)
+		{
+			isRight = false;
+			isMove = true;
+			MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
+
+		}
+		else if (INPUT->KeyPress(VK_RIGHT) && slideTime <= 0 && !isCrouch && !isInhole)
+		{
+			isRight = true;
+			isMove = true;
+			MoveWorldPos(RIGHT * DELTA * 150.0f * (isDash / 2.0f + 1));
+		}
+		else
+		{
+			isDash = false;
+			isMove = false;
+		}
+		while (GameManager::IsColorMatch(pointColor, 0, 255, 0))
+		{
+			MoveWorldPos(LEFT);
 			UpdatePointColor(GameManager::MainStage);
 		}
-	}
-	if (DESCENT_INTERPOL_AREA && !isJump)
-	{
-		while (DESCENT_INTERPOL_AREA)
+		while (GameManager::IsColorMatch(pointColor, 0, 0, 255))
 		{
-			MoveWorldPos(DOWN);
+			MoveWorldPos(RIGHT);
 			UpdatePointColor(GameManager::MainStage);
 		}
+		// A key
+		if (INPUT->KeyDown('A'))
+		{
+			MecanimManager::ComboInput('A');
+			if (btweenCmdTime > 0 &&
+				!isMove &&
+				!isJump &&
+				slideTime <= 0 &&
+				MecanimManager::ComboMatch(&Slide))
+			{
+				MecanimManager::ComboClear();
+				slideTime = maxSlideTime;
+				cmdTime = 0;
+				if (isRight) fowardVector = slidePower;
+				else fowardVector = -slidePower;
+			}
+			else if (AIR_AREA)
+			{
+				isHovering = true;
+				jumpable = false;
+				isJump = false;
+				isDash = false;
+			}
+			else if (jumpable && slideTime <= 0) {
+				MoveWorldPos(UP);
+				MoveWorldPos(UP);
+				isJump = true;
+				jumpable = false;
+				upVector = -4.6f;
+				kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_jumpdown_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+			}
+			if (isHovering)
+			{
+				upVector = -2.0f;
+				kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_hover_R.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+			}
+		}
+		// B key
+		if (INPUT->KeyDown('B'))
+		{
+			if (isHovering)
+			{
+				isHovering = false;
+			}
+		}
+		if (INPUT->KeyPress('B'))
+		{
+			if (!isHovering &&
+				slideTime <= 0)
+			{
+				if (!isInhole)
+				{
+					kirby_inhole_L.ChangeAnim(ANIMSTATE::REVERSE_ONCE, 1.0f / 12);
+					kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				}
+				isInhole = true;
+			}
+		}
+		else
+		{
+			if (isInhole)
+			{
+				if (!MAINSTAGE->InholeCheck())
+					isInhole = false;
+			}
+		}
+		if (isInhole) { MAINSTAGE->EnemyCollisionCheck(&inholeArea); }
+		if (RISE_INTERPOL_AREA)
+		{
+			while (RISE_INTERPOL_AREA)
+			{
+				MoveWorldPos(UP);
+				UpdatePointColor(MAINSTAGE);
+			}
+		}
+		if (DESCENT_INTERPOL_AREA && !isJump)
+		{
+			while (DESCENT_INTERPOL_AREA)
+			{
+				MoveWorldPos(DOWN);
+				UpdatePointColor(MAINSTAGE);
+			}
+		}		
+		UpdateSpritePos();
 	}
-	UpdateSpritePos();
 }
 
 void Player::LateUpdate()
 {
-	UpdatePointColor(GameManager::MainStage);
+	UpdatePointColor(MAINSTAGE);
 	UpdateAnimFSM();
 	UpdateAnim();
 }
@@ -440,6 +455,7 @@ void Player::Render()
 	kirby_inhole_R.Render();
 	kirby_ouch_L.Render();
 	kirby_ouch_R.Render();
+	inholeArea.Render();
 }
 
 void Player::UpdateSpritePos()
@@ -469,6 +485,8 @@ void Player::UpdateSpritePos()
 	kirby_inhole_R.SetWorldPos(GetWorldPos());
 	kirby_ouch_L.SetWorldPos(GetWorldPos());
 	kirby_ouch_R.SetWorldPos(GetWorldPos());
+	inholeArea.SetWorldPosX(GetWorldPos().x + 25 * IMG_SCALE);
+	inholeArea.SetWorldPosY(GetWorldPos().y);
 }
 
 void Player::Active(PlayerState state)
@@ -482,8 +500,8 @@ void Player::Active(PlayerState state)
 
 void Player::UpdatePointColor(Stage* stage)
 {
-	ObImage* stageInfo = stage->collider;
-	wstring fileName = stage->colFName;
+	ObImage* stageInfo = stage->mCollider;
+	wstring fileName = stage->mColFName;
 
 	Vector2 PixelPos = GetWorldPos() - stageInfo->GetWorldPos();
 	PixelPos /= IMG_SCALE;
@@ -503,8 +521,8 @@ void Player::UpdatePointColor(Stage* stage)
 	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
 	pointColor.z = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4));
 
-	if (GameManager::DebugMode)
-		cout << PixelPos.x << "  " << PixelPos.y << endl;
+	//if (GameManager::DebugMode)
+		//cout << PixelPos.x << "  " << PixelPos.y << endl;
 }
 
 void Player::ChangeSprite(ObImage* sprite)
