@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "NeutralObj.h"
 #include "Enemy.h"
 #include "GameManager.h"
 #include "Player.h"
@@ -70,7 +71,7 @@ void Stage::SetImagePos(float x, float y)
 {
 	mImage[0]->SetWorldPosX(mImagePos[0].x + x);
 	mImage[0]->SetWorldPosY(mImagePos[0].x + y);
-	
+
 	mCollider->SetWorldPosX(x);
 	mCollider->SetWorldPosY(y);
 }
@@ -106,15 +107,19 @@ void Stage::AddEnemy(Enemy* enemy)
 {
 	mEnemyList.push_back(enemy);
 }
+void Stage::PortalCollisionCheck(GameObject* col)
+{
+	
+}
 void Stage::EnemyCollisionCheck(GameObject* col)
 {
 	for (size_t i = 0; i < mEnemyList.size(); i++)
-	{		
-		if(col->Intersect(mEnemyList[i]))
+	{
+		if (mEnemyList[i]->isVisible && col->Intersect(mEnemyList[i]))
 			mEnemyList[i]->isInhole = true;
 	}
 }
-bool Stage::InholeCheck()
+bool Stage::EnemyInholingCheck()
 {
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{

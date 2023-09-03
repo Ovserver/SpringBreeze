@@ -8,9 +8,10 @@ public:
 	int		hp;
 	int		maxHp;
 	bool	isInhole;
+	bool	isStay;
 	Vector2	initPos;
 public:
-	Enemy(Vector2 _initPos, int _maxHp, wstring imageFname) : hp(_maxHp), maxHp(_maxHp), isInhole(false), initPos(_initPos)
+	Enemy(Vector2 _initPos, int _maxHp, wstring imageFname) : hp(_maxHp), maxHp(_maxHp), isInhole(false), isStay(false), initPos(_initPos)
 	{
 		SetPivot() = OFFSET_B;
 		LoadFile(imageFname);

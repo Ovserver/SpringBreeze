@@ -16,6 +16,7 @@ public:
 	wstring		mImageFName;
 	wstring		mColFName;
 	vector<Enemy*>	mEnemyList;
+	vector<ObRect*>	mPortalList;
 public:
 	Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName);
 	void Init();
@@ -26,8 +27,9 @@ public:
 	void AddImage(wstring _stageImgName, Vector2 imagePos);
 	void AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame = 1, bool isVertical = false);
 	void AddEnemy(Enemy* enemy);
+	void PortalCollisionCheck(GameObject* col);
 	void EnemyCollisionCheck(GameObject* col);
-	bool InholeCheck();
+	bool EnemyInholingCheck();
 };
 
 struct ComboMap

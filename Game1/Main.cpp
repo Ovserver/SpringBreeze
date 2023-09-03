@@ -88,11 +88,11 @@ void Main::Update()
 {
 	if (INPUT->KeyDown('1'))
 	{
-		meta.ChageSampler(D3D11_FILTER_MIN_MAG_MIP_POINT);
+		meta.ChangeSampler(D3D11_FILTER_MIN_MAG_MIP_POINT);
 	}
 	if (INPUT->KeyDown('2'))
 	{
-		meta.ChageSampler(D3D11_FILTER_MIN_MAG_MIP_LINEAR);
+		meta.ChangeSampler(D3D11_FILTER_MIN_MAG_MIP_LINEAR);
 	}
 
 	if (INPUT->KeyDown(VK_LEFT)and ºóÄ­.x > 0)

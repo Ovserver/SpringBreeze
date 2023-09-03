@@ -8,6 +8,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="NeutralObj.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -16,5 +17,6 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Item.cpp" />
+    <ClCompile Include="NeutralObj.cpp" />
   </ItemGroup>
 </Project>

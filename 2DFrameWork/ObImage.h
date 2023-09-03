@@ -42,7 +42,7 @@ public:
     void LoadFile(wstring file);
     void Render(class Camera* cam = app.maincam)override;
     ID3D11ShaderResourceView* GetSRV(){ return SRV; }
-    void ChageSampler(D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
+    void ChangeSampler(D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
         D3D11_TEXTURE_ADDRESS_MODE addressU = D3D11_TEXTURE_ADDRESS_WRAP,
         D3D11_TEXTURE_ADDRESS_MODE addressV = D3D11_TEXTURE_ADDRESS_WRAP);
     void ChangeAnim(ANIMSTATE anim, float interval, bool xAxis = true);

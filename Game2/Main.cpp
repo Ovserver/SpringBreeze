@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "NeutralObj.h"
 #include "Enemy.h"
 #include "GameManager.h"
 #include "Text.h"
@@ -52,6 +53,10 @@ void Main::Update()
 	if (ImGui::Button("Debug Mode"))
 	{
 		GameManager::DebugMode = !GameManager::DebugMode;
+	}
+	if (ImGui::Button("Debug Mode Player"))
+	{
+		MAINPLAYER->testAnimFSM = !MAINPLAYER->testAnimFSM;
 	}
 	if (GameManager::DebugMode)
 		cout << "pPos : " << MAINPLAYER->GetWorldPos().x << "   " << MAINPLAYER->GetWorldPos().y << endl;

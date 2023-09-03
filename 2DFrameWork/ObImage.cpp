@@ -243,7 +243,7 @@ void ObImage::Render(Camera* cam)
     D3D->GetDC()->Draw(4, 0);
 }
 
-void ObImage::ChageSampler(D3D11_FILTER filter ,
+void ObImage::ChangeSampler(D3D11_FILTER filter ,
     D3D11_TEXTURE_ADDRESS_MODE addressU ,
     D3D11_TEXTURE_ADDRESS_MODE addressV)
 {
