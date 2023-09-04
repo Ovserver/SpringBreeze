@@ -18,6 +18,7 @@ void Enemy::Update()
 			return;
 		}
 		dir.Normalize();
-		MoveWorldPos(dir * DELTA * 100.0f);
+		MoveWorldPos(dir * DELTA * 100.0f * accel);
+		accel += DELTA * 3;
 	}
 }

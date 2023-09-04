@@ -1,11 +1,14 @@
 #pragma once
-#define NUM_SPRITE_COUNT 12
-#define AIR_AREA GameManager::IsColorMatch(pointColor, 255, 0, 255)
-#define LEFT_WALL_AREA GameManager::IsColorMatch(pointColor, 0, 255, 0)
-#define RIGHT_WALL_AREA GameManager::IsColorMatch(pointColor, 0, 0, 255)
-#define LANDING_AREA GameManager::IsColorMatch(pointColor, 255, 0, 0)
-#define RISE_INTERPOL_AREA GameManager::IsColorMatch(pointColor, 0, 0, 0)
-#define DESCENT_INTERPOL_AREA GameManager::IsColorMatch(pointColor, 0, 255, 255)
+
+#define AIR_AREA GameManager::IsColorMatch(pointColor, 255, 0, 255)					//Non-Render Color
+#define WALL_AREA_LEFT GameManager::IsColorMatch(pointColor, 0, 255, 0)				//Green
+#define WALL_AREA_RIGHT GameManager::IsColorMatch(pointColor, 0, 0, 255)			//Blue
+#define LANDING_AREA GameManager::IsColorMatch(pointColor, 255, 0, 0)				//Red
+#define INTERPOL_AREA_RISE GameManager::IsColorMatch(pointColor, 0, 0, 0)			//Black
+#define INTERPOL_AREA_DESC_SLOPE GameManager::IsColorMatch(pointColor, 0, 255, 255)	//Sky
+#define INTERPOL_AREA_DESC GameManager::IsColorMatch(pointColor, 128, 255, 255)		//Bright Sky
+#define INTERPOL_AREA_PULL_LEFT GameManager::IsColorMatch(pointColor, 128, 255, 0)	//Grass
+#define INTERPOL_AREA_PULL_RIGHT GameManager::IsColorMatch(pointColor, 128, 0, 255)	//Purple
 
 class Enemy;
 
@@ -58,7 +61,7 @@ public:
 	vector<NeutralObj*>	starBulletList;
 public:
 	void Init();
-	void Release() {};
+	void Release();
 	void Update();
 	void LateUpdate();
 	void Render();
@@ -66,6 +69,7 @@ public:
 	void UpdatePointColor(Stage* stage);
 	void SetAnimGroup(PlayerCopyState copyState);
 private:
+
 	bool	isRight;
 	bool	isCrouch;
 	bool	isJump;
@@ -75,6 +79,8 @@ private:
 	bool	isInhole;
 	bool	isInholeIt;
 	bool	jumpable;
+	bool	lockInLeft;
+	bool	lockInRight;
 	float	slideTime;
 	const float	slideTimeInterval = 0.6f;
 	float	slidePower;

@@ -20,6 +20,8 @@ void Player::Init()
 	isInhole = false;
 	isInholeIt = false;
 	jumpable = true;
+	lockInLeft = false;
+	lockInRight = false;
 	slideTime = 0;
 	consumeTime = 0;
 	spitoutTime = 0;
@@ -29,6 +31,11 @@ void Player::Init()
 	cmdTime = 0;
 	STATE = AnimGroupNormal::IDLE;
 	hp = 100;
+
+	SetPivot() = OFFSET_B;
+	collider = COLLIDER::RECT;
+	SetScale().x = 50 * IMG_SCALE;
+	SetScale().y = 50 * IMG_SCALE;
 
 	mSprites.push_back(&kirby_idle_L);
 	mSprites.push_back(&kirby_idle_R);
@@ -67,8 +74,8 @@ void Player::Init()
 	for (size_t i = 0; i < maxStarBullet; i++)
 	{
 		NeutralObj* tmp = new NeutralObj(L"object_starbullet.png");
-		tmp->SetScale().x = tmp->imageSize.x / 4.0f * IMG_SCALE;
-		tmp->SetScale().y = tmp->imageSize.y * IMG_SCALE;
+		tmp->SetScale().x = tmp->imageSize.x / 4.0f * IMG_SCALE * 1.5f;
+		tmp->SetScale().y = tmp->imageSize.y * IMG_SCALE * 1.5f;
 		tmp->maxFrame.x = 4;
 		tmp->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 24);
 		tmp->isVisible = false;
@@ -83,17 +90,17 @@ void Player::Init()
 	inholeArea.collider = COLLIDER::RECT;
 	inholeArea.isFilled = false;
 
-	kirby_idle_L.LoadFile(L"kirby_none_R.png");
-	kirby_idle_L.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE * -1;
-	kirby_idle_L.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
-	kirby_idle_L.SetPivot() = OFFSET_B;
-	kirby_idle_L.maxFrame.x = 3;
-	kirby_idle_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 3);
-	kirby_idle_L.isVisible = false;
+	//kirby_idle_L.LoadFile(L"kirby_none_R.png");
+	//kirby_idle_L.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE * -1;
+	//kirby_idle_L.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
+	//kirby_idle_L.SetPivot() = OFFSET_B;
+	//kirby_idle_L.maxFrame.x = 3;
+	//kirby_idle_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 3);
+	//kirby_idle_L.isVisible = false;
 
 	kirby_idle_R.LoadFile(L"kirby_none_R.png");
-	kirby_idle_R.SetScale().x = kirby_idle_L.imageSize.x / 3.0f * IMG_SCALE;
-	kirby_idle_R.SetScale().y = kirby_idle_L.imageSize.y * IMG_SCALE;
+	kirby_idle_R.SetScale().x = kirby_idle_R.imageSize.x / 3.0f * IMG_SCALE;
+	kirby_idle_R.SetScale().y = kirby_idle_R.imageSize.y * IMG_SCALE;
 	kirby_idle_R.SetPivot() = OFFSET_B;
 	kirby_idle_R.maxFrame.x = 3;
 	kirby_idle_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 3);
@@ -328,7 +335,21 @@ void Player::Init()
 	Slide.comboMaps[1] = VK_DOWN;
 	Slide.comboLength = 2;
 
-	UpdatePointColor(GameManager::MainStage);
+	UpdatePointColor(MAINSTAGE);
+}
+
+void Player::Release()
+{
+	for (size_t i = 0; i < inholeEnemyList.size(); i++)
+	{
+		delete inholeEnemyList[i];
+	}
+	inholeEnemyList.clear();
+	for (size_t i = 0; i < starBulletList.size(); i++)
+	{
+		delete starBulletList[i];
+	}
+	starBulletList.clear();
 }
 
 void Player::Update()
@@ -347,9 +368,10 @@ void Player::Update()
 	}
 	else
 	{
-		upVector += DELTA * 10.0f;
+		cout << "upvec " << upVector << endl;
+		upVector += DELTA * 15.0f;
 
-		if (LANDING_AREA)
+		if (LANDING_AREA && upVector > 0)
 		{
 			isJump = false;
 			jumpable = true;
@@ -358,8 +380,9 @@ void Player::Update()
 		}
 
 		if (upVector > 0.5f && isHovering) upVector = 0.5f;
+		else if (upVector > 3.5f) upVector = 3.5f;
 
-		if (AIR_AREA || DESCENT_INTERPOL_AREA)
+		//if (AIR_AREA || INTERPOL_AREA_DESC_SLOPE || WALL_AREA_LEFT || WALL_AREA_RIGHT)
 		{
 			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
 		}
@@ -372,7 +395,11 @@ void Player::Update()
 
 		MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
 		// arrow up key
-		if (INPUT->KeyDown(VK_UP)) { MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime; }
+		if (INPUT->KeyDown(VK_UP))
+		{
+			if (MAINSTAGE->PortalCollisionCheck(this)) return;
+			MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime;
+		}
 
 		// arrow down key
 		if (INPUT->KeyDown(VK_DOWN)) {
@@ -399,6 +426,7 @@ void Player::Update()
 		// arrow left key & right key
 		if (INPUT->KeyDown(VK_LEFT))
 		{
+			lockInRight = false;
 			if (isDash) isDash = false;
 			MecanimManager::ComboInput(VK_LEFT);
 			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
@@ -411,6 +439,7 @@ void Player::Update()
 		}
 		if (INPUT->KeyDown(VK_RIGHT))
 		{
+			lockInLeft = false;
 			if (isDash) isDash = false;
 			MecanimManager::ComboInput(VK_RIGHT);
 			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_R))
@@ -423,20 +452,30 @@ void Player::Update()
 		}
 		if (INPUT->KeyPress(VK_LEFT))
 		{
-			if (consumeTime <= 0 && spitoutTime <= 0 && slideTime <= 0 && !isCrouch && !isInhole && !RIGHT_WALL_AREA)
+			if (!lockInLeft && consumeTime <= 0 && spitoutTime <= 0 && slideTime <= 0 && !isCrouch && !isInhole)
 			{
 				isRight = false;
 				isMove = true;
 				MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
 			}
+			else
+			{
+				isDash = false;
+				isMove = false;
+			}
 		}
 		else if (INPUT->KeyPress(VK_RIGHT))
 		{
-			if (consumeTime <= 0 && spitoutTime <= 0 && slideTime <= 0 && !isCrouch && !isInhole && !LEFT_WALL_AREA)
+			if (!lockInRight && consumeTime <= 0 && spitoutTime <= 0 && slideTime <= 0 && !isCrouch && !isInhole)
 			{
 				isRight = true;
 				isMove = true;
 				MoveWorldPos(RIGHT * DELTA * 150.0f * (isDash / 2.0f + 1));
+			}
+			else
+			{
+				isDash = false;
+				isMove = false;
 			}
 		}
 		else
@@ -460,7 +499,7 @@ void Player::Update()
 				if (isRight) fowardVector = slidePower;
 				else fowardVector = -slidePower;
 			}
-			else if (AIR_AREA && !isInholeIt && !isInhole)
+			else if ((AIR_AREA || WALL_AREA_LEFT || WALL_AREA_RIGHT) && !isInholeIt && !isInhole)
 			{
 				isHovering = true;
 				jumpable = false;
@@ -471,16 +510,21 @@ void Player::Update()
 				MoveWorldPos(UP);
 				isJump = true;
 				jumpable = false;
-				upVector = -4.6f;
+				upVector = -5.5f;
 				kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_jumpdown_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			}
 			if (isHovering)
 			{
-				upVector = -2.0f;
+				upVector = -2.8f;
 				kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_hover_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			}
+		}
+		if (AIR_AREA)
+		{
+			lockInLeft = false;
+			lockInRight = false;
 		}
 		// B key
 
@@ -511,7 +555,7 @@ void Player::Update()
 					{
 						starBulletList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
 						starBulletList[i]->isVisible = true;
-						starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 300.0f);
+						starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 600.0f);
 						break;
 					}
 				}
@@ -552,19 +596,46 @@ void Player::Update()
 				}
 			}
 		}
-		if (RISE_INTERPOL_AREA)
+		if (INTERPOL_AREA_RISE)
 		{
-			while (RISE_INTERPOL_AREA)
+			while (INTERPOL_AREA_RISE)
 			{
 				MoveWorldPos(UP);
 				UpdatePointColor(MAINSTAGE);
 			}
 		}
-		if (DESCENT_INTERPOL_AREA && !isJump)
+		if (INTERPOL_AREA_DESC_SLOPE && !isJump)
 		{
-			while (DESCENT_INTERPOL_AREA)
+			while (INTERPOL_AREA_DESC_SLOPE)
 			{
 				MoveWorldPos(DOWN);
+				UpdatePointColor(MAINSTAGE);
+			}
+		}
+		if (INTERPOL_AREA_DESC)
+		{
+			while (INTERPOL_AREA_DESC)
+			{
+				MoveWorldPos(DOWN);
+				UpdatePointColor(MAINSTAGE);
+			}
+		}
+		if (INTERPOL_AREA_PULL_LEFT)
+		{
+			lockInRight = true;
+			while (INTERPOL_AREA_PULL_LEFT)
+			{
+				MoveWorldPos(LEFT);
+				UpdatePointColor(MAINSTAGE);
+			}
+		}
+		if (INTERPOL_AREA_PULL_RIGHT)
+		{
+			cout << "lockin left" << endl;
+			lockInLeft = true;
+			while (INTERPOL_AREA_PULL_RIGHT)
+			{
+				MoveWorldPos(RIGHT);
 				UpdatePointColor(MAINSTAGE);
 			}
 		}
@@ -670,8 +741,8 @@ void Player::UpdateAnim()
 	switch (STATE)
 	{
 	case AnimGroupNormal::IDLE:
-		if (isRight) ChangeSprite(&kirby_idle_R);
-		else ChangeSprite(&kirby_idle_L);
+		if (isRight) { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 0; }
+		else { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 180 * ToRadian; };
 		break;
 	case AnimGroupNormal::MOVE:
 		if (isRight) ChangeSprite(&kirby_move_R);

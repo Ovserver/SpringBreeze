@@ -23,6 +23,11 @@ public:
 	{
 		SetWorldPos(initPos);
 		hp = maxHp;
+		accel = 1;
+		isStay = false;
+		isVisible = true;
 	}
 	void Update();
+private:
+	float accel;
 };

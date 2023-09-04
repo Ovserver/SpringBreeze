@@ -59,9 +59,13 @@ void Stage::Render()
 	}
 	for (size_t i = 0; i < mImage.size(); i++)
 	{
-		mImage[0]->Render();
+		mImage[i]->Render();
 	}
-	mCollider->Render();
+	//mCollider->Render();
+	for (size_t i = 0; i < mPortalList.size(); i++)
+	{
+		mPortalList[i].rect.Render();
+	}
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
 		mEnemyList[i]->Render();
@@ -88,6 +92,7 @@ void Stage::AddImage(wstring _stageImgName, Vector2 imagePos)
 	ObImage* tmp = new ObImage();
 	tmp->LoadFile(_stageImgName);
 	tmp->SetWorldPos(imagePos);
+	tmp->SetPivot() = OFFSET_LT;
 	mImage.push_back(tmp);
 	mImagePos.push_back(imagePos);
 }
@@ -107,9 +112,27 @@ void Stage::AddEnemy(Enemy* enemy)
 {
 	mEnemyList.push_back(enemy);
 }
-void Stage::PortalCollisionCheck(GameObject* col)
+void Stage::AddPortal(ObRect* _rect, wstring _destStageName, int _initPosNum)
 {
-	
+	Portal temp;
+	temp.rect.SetPivot() = OFFSET_B;
+	temp.rect.collider = COLLIDER::RECT;
+	temp.rect.isFilled = false;
+	temp.destStageFname = _destStageName;
+	temp.initPosNum = _initPosNum;
+	mPortalList.push_back(temp);
+}
+bool Stage::PortalCollisionCheck(GameObject* col)
+{
+	for (size_t i = 0; i < mPortalList.size(); i++)
+	{
+		if (mPortalList[i].rect.Intersect(col))
+		{
+			GameManager::ChangeMainStage(mPortalList[i].destStageFname, mPortalList[i].initPosNum);
+			return true;
+		}
+	}
+	return false;
 }
 void Stage::EnemyCollisionCheck(GameObject* col)
 {
@@ -163,13 +186,15 @@ bool GameManager::IsColorMatch(Color& cl, float r, float g, float b)
 		return false;
 }
 
-bool GameManager::ChangeMainStage(wstring _stageImgName)
+bool GameManager::ChangeMainStage(wstring _stageImgName, int posListNum)
 {
 	for (size_t i = 0; i < StageList.size(); i++)
 	{
 		if (StageList[i]->mImageFName == _stageImgName)
 		{
 			MainStage = StageList[i];
+			MainStage->Init();
+			MainPlayer->SetWorldPos(MainStage->mPlayerInitPos[posListNum]);
 			return true;
 		}
 	}
