@@ -4,11 +4,17 @@
 #include "GameManager.h"
 #include "Player.h"
 
-int		MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
-bool	GameManager::DebugMode = false;
+int				MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
+bool			GameManager::DebugMode = false;
 Stage* GameManager::MainStage = nullptr;
 Player* GameManager::MainPlayer = nullptr;
-vector<Stage*> GameManager::StageList;
+vector<Stage*>	GameManager::StageList;
+
+ObImage* UIManager::UI_standard = nullptr;
+ObImage* UIManager::UI_enemy = nullptr;
+ObRect* UIManager::player_HpBar = nullptr;
+ObRect* UIManager::enemy_HpBar = nullptr;
+ObRect* UIManager::backfaceUI = nullptr;
 
 Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName)
 {
@@ -134,12 +140,21 @@ bool Stage::PortalCollisionCheck(GameObject* col)
 	}
 	return false;
 }
-void Stage::EnemyCollisionCheck(GameObject* col)
+void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType, int damage)
 {
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
 		if (mEnemyList[i]->isVisible && col->Intersect(mEnemyList[i]))
-			mEnemyList[i]->isInhole = true;
+		{
+			if (checkType == COLLISION_CHECK_TYPE::INHOLE)
+				mEnemyList[i]->isInhole = true;
+			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE)
+			{
+				mEnemyList[i]->Damage(damage);
+				col->isVisible = false;
+				return;
+			}
+		}
 	}
 }
 bool Stage::EnemyInholingCheck()
@@ -199,4 +214,59 @@ bool GameManager::ChangeMainStage(wstring _stageImgName, int posListNum)
 		}
 	}
 	return false;
+}
+
+void UIManager::Init()
+{
+	UI_standard = new ObImage();
+	UI_enemy = new ObImage();
+	player_HpBar = new ObRect();
+	enemy_HpBar = new ObRect();
+	backfaceUI = new ObRect();
+
+	UI_standard->LoadFile(L"UI_normal.png");
+	UI_standard->SetScale().x = UI_standard->imageSize.x * IMG_SCALE;
+	UI_standard->SetScale().y = UI_standard->imageSize.y * IMG_SCALE;
+	UI_standard->SetPivot() = OFFSET_B;
+	UI_standard->SetWorldPosY(app.GetHalfHeight() * -1);
+
+	UI_enemy->LoadFile(L"UI_enemy.png");
+	UI_enemy->SetScale().x = UI_enemy->imageSize.x * IMG_SCALE;
+	UI_enemy->SetScale().y = UI_enemy->imageSize.y * IMG_SCALE;
+	UI_enemy->SetPivot() = OFFSET_B;
+	//UI_enemy->isVisible = false;
+	UI_enemy->SetWorldPosY(app.GetHalfHeight() * -1);
+
+	player_HpBar->SetScale().x = 60.0f * IMG_SCALE;
+	player_HpBar->SetScale().y = 14.0f * IMG_SCALE;
+	player_HpBar->color = Color(1, 0, 0);
+	player_HpBar->SetPivot() = OFFSET_LB;
+	player_HpBar->SetWorldPosX(-74 * IMG_SCALE);
+	player_HpBar->SetWorldPosY(app.GetHalfHeight() * -1 + 24 * IMG_SCALE);
+
+	enemy_HpBar->SetScale().x = 60.0f * IMG_SCALE;
+	enemy_HpBar->SetScale().y = 14.0f * IMG_SCALE;
+	enemy_HpBar->color = Color(0, 0, 1);
+	enemy_HpBar->SetPivot() = OFFSET_RB;
+	enemy_HpBar->SetWorldPosX(74 * IMG_SCALE);
+	enemy_HpBar->SetWorldPosY(app.GetHalfHeight() * -1 + 24 * IMG_SCALE);
+
+	backfaceUI->SetScale().x = UI_standard->imageSize.x * IMG_SCALE;
+	backfaceUI->SetScale().y = UI_standard->imageSize.y * IMG_SCALE;
+	backfaceUI->color = Color(0, 0, 0);
+	backfaceUI->SetPivot() = OFFSET_B;
+	backfaceUI->SetWorldPosY(app.GetHalfHeight() * -1);
+}
+
+void UIManager::Update()
+{
+}
+
+void UIManager::Render(Camera* camUI)
+{
+	backfaceUI->Render(camUI);
+	player_HpBar->Render(camUI);
+	//enemy_HpBar->Render(camUI);
+	//UI_enemy->Render(camUI);
+	UI_standard->Render(camUI);
 }

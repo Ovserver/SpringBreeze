@@ -12,16 +12,20 @@
 
 class Enemy;
 
-enum class PlayerCopyState
+enum class PLAYER_COPY_STATE
 {
 	NORMAL, BEAM, SWORD
 };
 
-enum class AnimGroupBeam
+enum class ANIM_GROUP_BEAM
 {
 
 };
-enum class AnimGroupNormal
+enum class ANIM_GROUP_SWORD
+{
+
+};
+enum class ANIM_GROUP_NORMAL
 {
 	IDLE,
 	MOVE,
@@ -55,8 +59,8 @@ public:
 	void*				currentAnimGroup;
 	const int			maxStarBullet = 3;
 	Color				pointColor;
-	PlayerCopyState		copyState;
-	AnimGroupNormal		STATE;
+	PLAYER_COPY_STATE	copyState;
+	ANIM_GROUP_NORMAL	STATE;
 	vector<Enemy*>		inholeEnemyList;
 	vector<NeutralObj*>	starBulletList;
 public:
@@ -67,7 +71,7 @@ public:
 	void Render();
 	void UpdateSpritePos();
 	void UpdatePointColor(Stage* stage);
-	void SetAnimGroup(PlayerCopyState copyState);
+	void SetAnimGroup(PLAYER_COPY_STATE copyState);
 private:
 
 	bool	isRight;
@@ -91,7 +95,7 @@ private:
 	float	consumeTime;
 	const float	consumeTimeInterval = 0.5f;
 	float	spitoutTime;
-	const float	spitoutTimeInterval = 0.5f;
+	const float	spitoutTimeInterval = 0.2f;
 
 	ObRect	inholeArea;
 	vector<ObImage*> mSprites;

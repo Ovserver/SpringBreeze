@@ -17,13 +17,13 @@ Main::~Main()
 void Main::Init()
 {
 	camUI.UpdateMatrix();
-	MAINPLAYER = &mainPlayer;
+	
 
 	GameManager::StageList.push_back(new Stage(L"stage_1-1.png", L"stage_1-1_collider.png", L"stage_1_bg_1.png"));
 	GameManager::StageList[0]->AddBGImage(L"stage_1_bg_1-1.png", Vector2(-96, -8) * IMG_SCALE, 4, true);
 	GameManager::StageList[0]->mBGImage[1]->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6, false);
-	GameManager::StageList[0]->AddEnemy(new Enemy(Vector2(150, -150), 10, L"waddleDoo_ouch.png"));
-	GameManager::StageList[0]->AddEnemy(new Enemy(Vector2(280, -130), 10, L"waddleDoo_ouch.png"));
+	GameManager::StageList[0]->AddEnemy(new Enemy(Vector2(150, -150), 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
+	GameManager::StageList[0]->AddEnemy(new Enemy(Vector2(280, -130), 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
 	GameManager::StageList[0]->AddPortal(new ObRect(), L"stage_1-2.png");
 	GameManager::StageList[0]->mPortalList[0].rect.SetWorldPos(Vector2(396, -136) * IMG_SCALE);
 	GameManager::StageList[0]->mPortalList[0].rect.SetScale().x = 24 * IMG_SCALE;
@@ -33,10 +33,10 @@ void Main::Init()
 
 	GameManager::StageList.push_back(new Stage(L"stage_1-2.png", L"stage_1-2_collider.png", L"stage_1_bg_1.png"));
 	GameManager::StageList[1]->AddPortal(new ObRect(), L"stage_1-1.png", 1);
-	GameManager::StageList[1]->AddImage(L"stage_1_effect_G1.png",Vector2(0,-96)*IMG_SCALE);
-	GameManager::StageList[1]->AddImage(L"stage_1_effect_G2.png",Vector2(240,-96)*IMG_SCALE);
+	GameManager::StageList[1]->AddImage(L"stage_1_effect_G1.png", Vector2(0, -96) * IMG_SCALE);
+	GameManager::StageList[1]->AddImage(L"stage_1_effect_G2.png", Vector2(240, -96) * IMG_SCALE);
 	GameManager::StageList[1]->mImage[1]->SetScale().x = GameManager::StageList[1]->mImage[1]->imageSize.x / 6.0f * IMG_SCALE;
-	GameManager::StageList[1]->mImage[1]->SetScale().y = GameManager::StageList[1]->mImage[1]->imageSize.y  * IMG_SCALE;
+	GameManager::StageList[1]->mImage[1]->SetScale().y = GameManager::StageList[1]->mImage[1]->imageSize.y * IMG_SCALE;
 	GameManager::StageList[1]->mImage[1]->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6);
 	GameManager::StageList[1]->mImage[1]->maxFrame.x = 6;
 	GameManager::StageList[1]->mImage[2]->SetScale().x = GameManager::StageList[1]->mImage[2]->imageSize.x / 6.0f * IMG_SCALE;
@@ -48,16 +48,22 @@ void Main::Init()
 	GameManager::StageList[1]->mPortalList[0].rect.SetScale().y = 30 * IMG_SCALE;
 	GameManager::StageList[1]->mPlayerInitPos.push_back(Vector2(128, -112) * IMG_SCALE);
 
+	if (!MAINPLAYER)
+	{
+		MAINPLAYER = &mainPlayer;
+		MAINPLAYER->Init();
+	}
+
 	GameManager::ChangeMainStage(L"stage_1-1.png");
 	//MAINPLAYER->SetWorldPos(Vector2(100, -100) * IMG_SCALE);
 
-	UI_normal.LoadFile(L"UI_normal.png");
-	UI_normal.SetScale().x = UI_normal.imageSize.x * IMG_SCALE;
-	UI_normal.SetScale().y = UI_normal.imageSize.y * IMG_SCALE;
-	UI_normal.SetPivot() = OFFSET_B;
-	UI_normal.SetWorldPosY(app.GetHalfHeight() * -1);
-
-	MAINPLAYER->Init();
+	//UI_normal.LoadFile(L"UI_normal.png");
+	//UI_normal.SetScale().x = UI_normal.imageSize.x * IMG_SCALE;
+	//UI_normal.SetScale().y = UI_normal.imageSize.y * IMG_SCALE;
+	//UI_normal.SetPivot() = OFFSET_B;
+	//UI_normal.SetWorldPosY(app.GetHalfHeight() * -1);
+	
+	UIManager::Init();
 }
 
 void Main::Release()
@@ -100,6 +106,7 @@ void Main::Update()
 		this->Init();
 	}
 	app.maincam->SetWorldPos(MAINPLAYER->GetWorldPos());
+	UIManager::Update();
 }
 
 void Main::LateUpdate()
@@ -118,7 +125,7 @@ void Main::Render()
 {
 	MAINSTAGE->Render();
 	MAINPLAYER->Render();
-	UI_normal.Render(&camUI);
+	UIManager::Render(&camUI);
 }
 
 void Main::ResizeScreen()

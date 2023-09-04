@@ -8,7 +8,7 @@ void Player::Init()
 {
 	testAnimFSM = true;
 	currentAnimGroup = nullptr;
-	copyState = PlayerCopyState::NORMAL;
+	copyState = PLAYER_COPY_STATE::NORMAL;
 	SetAnimGroup(copyState);
 
 	isRight = true;
@@ -29,11 +29,11 @@ void Player::Init()
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
-	STATE = AnimGroupNormal::IDLE;
+	STATE = ANIM_GROUP_NORMAL::IDLE;
 	hp = 100;
 
-	SetPivot() = OFFSET_B;
 	collider = COLLIDER::RECT;
+	SetPivot() = OFFSET_B;
 	SetScale().x = 50 * IMG_SCALE;
 	SetScale().y = 50 * IMG_SCALE;
 
@@ -73,15 +73,7 @@ void Player::Init()
 
 	for (size_t i = 0; i < maxStarBullet; i++)
 	{
-		NeutralObj* tmp = new NeutralObj(L"object_starbullet.png");
-		tmp->SetScale().x = tmp->imageSize.x / 4.0f * IMG_SCALE * 1.5f;
-		tmp->SetScale().y = tmp->imageSize.y * IMG_SCALE * 1.5f;
-		tmp->maxFrame.x = 4;
-		tmp->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 24);
-		tmp->isVisible = false;
-		tmp->collider = COLLIDER::CIRCLE;
-		tmp->SetPivot() = OFFSET_B;
-		starBulletList.push_back(tmp);
+		starBulletList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::STAR_BULLET));
 	}
 
 	inholeArea.SetScale().x = 50 * IMG_SCALE;
@@ -122,19 +114,19 @@ void Player::Init()
 	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 10);
 	kirby_move_R.isVisible = false;
 
-	kirby_dash_L.LoadFile(L"kirby_dash_R.png");
-	kirby_dash_L.SetScale().x = kirby_dash_L.imageSize.x / 6.0f * IMG_SCALE * -1;
-	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y * IMG_SCALE;
+	kirby_dash_L.LoadFile(L"kirby_dash_test.png");
+	kirby_dash_L.SetScale().x = kirby_dash_L.imageSize.x / 8.0f * IMG_SCALE * -1;
+	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y  * IMG_SCALE;
 	kirby_dash_L.SetPivot() = OFFSET_B;
-	kirby_dash_L.maxFrame.x = 6;
+	kirby_dash_L.maxFrame.x = 8;
 	kirby_dash_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 18);
 	kirby_dash_L.isVisible = false;
 
-	kirby_dash_R.LoadFile(L"kirby_dash_R.png");
-	kirby_dash_R.SetScale().x = kirby_dash_R.imageSize.x / 6.0f * IMG_SCALE;
+	kirby_dash_R.LoadFile(L"kirby_dash_test.png");
+	kirby_dash_R.SetScale().x = kirby_dash_R.imageSize.x / 8.0f * IMG_SCALE;
 	kirby_dash_R.SetScale().y = kirby_dash_R.imageSize.y * IMG_SCALE;
 	kirby_dash_R.SetPivot() = OFFSET_B;
-	kirby_dash_R.maxFrame.x = 6;
+	kirby_dash_R.maxFrame.x = 8;
 	kirby_dash_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 18);
 	kirby_dash_R.isVisible = false;
 
@@ -334,8 +326,6 @@ void Player::Init()
 	Slide.comboMaps[0] = 'A';
 	Slide.comboMaps[1] = VK_DOWN;
 	Slide.comboLength = 2;
-
-	UpdatePointColor(MAINSTAGE);
 }
 
 void Player::Release()
@@ -368,7 +358,6 @@ void Player::Update()
 	}
 	else
 	{
-		cout << "upvec " << upVector << endl;
 		upVector += DELTA * 15.0f;
 
 		if (LANDING_AREA && upVector > 0)
@@ -537,7 +526,6 @@ void Player::Update()
 				spitoutTime <= 0 &&
 				consumeTime <= 0)
 			{
-				cout << "pass inhole" << endl;
 				isInhole = true;
 			}
 			else if (isInholeIt)
@@ -581,12 +569,11 @@ void Player::Update()
 		}
 		if (isInhole)
 		{
-			MAINSTAGE->EnemyCollisionCheck(&inholeArea);
+			MAINSTAGE->EnemyCollisionCheck(&inholeArea, COLLISION_CHECK_TYPE::INHOLE);
 			if (!MAINSTAGE->EnemyInholingCheck()) // 빨아들이는 중인 적이 없을 때
 			{
 				for (size_t i = 0; i < inholeEnemyList.size(); i++)
 				{
-					cout << "isit" << endl;
 					if (inholeEnemyList[i])
 					{
 						isInhole = false;
@@ -631,7 +618,6 @@ void Player::Update()
 		}
 		if (INTERPOL_AREA_PULL_RIGHT)
 		{
-			cout << "lockin left" << endl;
 			lockInLeft = true;
 			while (INTERPOL_AREA_PULL_RIGHT)
 			{
@@ -643,10 +629,12 @@ void Player::Update()
 		for (size_t i = 0; i < maxStarBullet; i++)
 		{
 			if (starBulletList[i]->isVisible)
+			{
 				starBulletList[i]->Update();
+				MAINSTAGE->EnemyCollisionCheck(starBulletList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE, 10);
+			}
 		}
 	}
-	//cout << isJump << " " << isInhole << " " << isInholeIt << " " << inholeEnemyList.size() << endl;
 }
 
 void Player::LateUpdate()
@@ -701,24 +689,22 @@ void Player::UpdatePointColor(Stage* stage)
 	pointColor.x = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 2);
 	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
 	pointColor.z = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4));
-
-	//if (GameManager::DebugMode)
-		//cout << PixelPos.x << "  " << PixelPos.y << endl;
 }
 
-void Player::SetAnimGroup(PlayerCopyState copyState)
+void Player::SetAnimGroup(PLAYER_COPY_STATE copyState)
 {
 	if (currentAnimGroup)
 		delete currentAnimGroup;
 	switch (copyState)
 	{
-	case PlayerCopyState::NORMAL:
-		currentAnimGroup = new AnimGroupNormal();
+	case PLAYER_COPY_STATE::NORMAL:
+		currentAnimGroup = new ANIM_GROUP_NORMAL();
 		break;
-	case PlayerCopyState::BEAM:
-		currentAnimGroup = new AnimGroupBeam();
+	case PLAYER_COPY_STATE::BEAM:
+		currentAnimGroup = new ANIM_GROUP_BEAM();
 		break;
-	case PlayerCopyState::SWORD:
+	case PLAYER_COPY_STATE::SWORD:
+		currentAnimGroup = new ANIM_GROUP_SWORD();
 		break;
 	default:
 		break;
@@ -738,262 +724,226 @@ void Player::ChangeSprite(ObImage* sprite)
 
 void Player::UpdateAnim()
 {
-	switch (STATE)
+	if (copyState == PLAYER_COPY_STATE::NORMAL)
 	{
-	case AnimGroupNormal::IDLE:
-		if (isRight) { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 0; }
-		else { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 180 * ToRadian; };
-		break;
-	case AnimGroupNormal::MOVE:
-		if (isRight) ChangeSprite(&kirby_move_R);
-		else ChangeSprite(&kirby_move_L);
-		break;
-	case AnimGroupNormal::DASH:
-		if (isRight) ChangeSprite(&kirby_dash_R);
-		else ChangeSprite(&kirby_dash_L);
-		break;
-	case AnimGroupNormal::CROUCH:
-		if (isRight) ChangeSprite(&kirby_crouch_R);
-		else ChangeSprite(&kirby_crouch_L);
-		break;
-	case AnimGroupNormal::SLIDE:
-		if (isRight) ChangeSprite(&kirby_slide_R);
-		else ChangeSprite(&kirby_slide_L);
-		break;
-	case AnimGroupNormal::JUMP:
-		if (isRight) ChangeSprite(&kirby_jump_R);
-		else ChangeSprite(&kirby_jump_L);
-		break;
-	case AnimGroupNormal::JUMPDOWN:
-		if (isRight) ChangeSprite(&kirby_jumpdown_R);
-		else ChangeSprite(&kirby_jumpdown_L);
-		break;
-	case AnimGroupNormal::FALLDOWN:
-		if (isRight) ChangeSprite(&kirby_falldown_R);
-		else ChangeSprite(&kirby_falldown_L);
-		break;
-	case AnimGroupNormal::HOVER:
-		if (isRight) ChangeSprite(&kirby_hover_R);
-		else ChangeSprite(&kirby_hover_L);
-		break;
-	case AnimGroupNormal::INHOLE:
-		if (isRight) ChangeSprite(&kirby_inhole_R);
-		else ChangeSprite(&kirby_inhole_L);
-		break;
-	case AnimGroupNormal::INHOLEIT:
-		if (isRight) ChangeSprite(&kirby_inholeIt_R);
-		else ChangeSprite(&kirby_inholeIt_L);
-		break;
-	case AnimGroupNormal::INHOLEIT_MOVE:
-		if (isRight) ChangeSprite(&kirby_inholeIt_move_R);
-		else ChangeSprite(&kirby_inholeIt_move_L);
-		break;
-	case AnimGroupNormal::INHOLEIT_DASH:
-		if (isRight) ChangeSprite(&kirby_inholeIt_dash_R);
-		else ChangeSprite(&kirby_inholeIt_dash_L);
-		break;
-	case AnimGroupNormal::INHOLEIT_JUMP:
-		if (isRight) ChangeSprite(&kirby_inholeIt_jump_R);
-		else ChangeSprite(&kirby_inholeIt_jump_L);
-		break;
-	case AnimGroupNormal::CONSUME:
-		ChangeSprite(&kirby_consume);
-		break;
-	case AnimGroupNormal::SPITOUT:
-		if (isRight) ChangeSprite(&kirby_spitout_R);
-		else ChangeSprite(&kirby_spitout_L);
-		break;
-	case AnimGroupNormal::OUCH:
-		break;
-	case AnimGroupNormal::OVER:
-		break;
-	default:
-		break;
-	}
-}
-
-void Player::UpdateAnimFSM()
-{
-	if (testAnimFSM)
-	{
-		switch (STATE)
+		ANIM_GROUP_NORMAL* tmpSTATE = static_cast<ANIM_GROUP_NORMAL*>(currentAnimGroup);
+		switch (*tmpSTATE)
 		{
-		case AnimGroupNormal::IDLE:
-			if (isInhole)
-			{
-				STATE = AnimGroupNormal::INHOLE;
-				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			}
-			else if (isJump) STATE = AnimGroupNormal::JUMP;
-			else if (isDash) STATE = AnimGroupNormal::DASH;
-			else if (isMove) STATE = AnimGroupNormal::MOVE;
-			else if (isCrouch) STATE = AnimGroupNormal::CROUCH;
+		case ANIM_GROUP_NORMAL::IDLE:
+			if (isRight) { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 0; }
+			else { ChangeSprite(&kirby_idle_R); kirby_idle_R.SetRotation().y = 180 * ToRadian; };
 			break;
-		case AnimGroupNormal::MOVE:
-			if (isJump) STATE = AnimGroupNormal::JUMP;
-			else if (AIR_AREA) STATE = AnimGroupNormal::FALLDOWN;
-			else if (!isMove) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::MOVE:
+			if (isRight) ChangeSprite(&kirby_move_R);
+			else ChangeSprite(&kirby_move_L);
 			break;
-		case AnimGroupNormal::DASH:
-			if (isJump) STATE = AnimGroupNormal::JUMP;
-			else if (AIR_AREA) STATE = AnimGroupNormal::FALLDOWN;
-			else if (!isDash) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::DASH:
+			if (isRight) ChangeSprite(&kirby_dash_R);
+			else ChangeSprite(&kirby_dash_L);
 			break;
-		case AnimGroupNormal::CROUCH:
-			if (slideTime > 0) STATE = AnimGroupNormal::SLIDE;
-			else if (!isCrouch) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::CROUCH:
+			if (isRight) ChangeSprite(&kirby_crouch_R);
+			else ChangeSprite(&kirby_crouch_L);
 			break;
-		case AnimGroupNormal::SLIDE:
-			if (slideTime <= 0) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::SLIDE:
+			if (isRight) ChangeSprite(&kirby_slide_R);
+			else ChangeSprite(&kirby_slide_L);
 			break;
-		case AnimGroupNormal::JUMP:
-			if (isInhole) {
-				STATE = AnimGroupNormal::INHOLE;
-				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			}
-			else if (isHovering) STATE = AnimGroupNormal::HOVER;
-			else if (upVector > -0.009f) STATE = AnimGroupNormal::JUMPDOWN;
-			else if (!isJump) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::JUMP:
+			if (isRight) ChangeSprite(&kirby_jump_R);
+			else ChangeSprite(&kirby_jump_L);
 			break;
-		case AnimGroupNormal::JUMPDOWN:
-			if (isInhole) {
-				STATE = AnimGroupNormal::INHOLE;
-				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			}
-			else if (isHovering) STATE = AnimGroupNormal::HOVER;
-			else if (!isJump) STATE = AnimGroupNormal::IDLE;
-			else if (upVector > 5.0f) STATE = AnimGroupNormal::FALLDOWN;
+		case ANIM_GROUP_NORMAL::JUMPDOWN:
+			if (isRight) ChangeSprite(&kirby_jumpdown_R);
+			else ChangeSprite(&kirby_jumpdown_L);
 			break;
-		case AnimGroupNormal::FALLDOWN:
-			if (isInhole) {
-				STATE = AnimGroupNormal::INHOLE;
-				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
-			}
-			else if (isHovering) STATE = AnimGroupNormal::HOVER;
-			else if (!AIR_AREA) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::FALLDOWN:
+			if (isRight) ChangeSprite(&kirby_falldown_R);
+			else ChangeSprite(&kirby_falldown_L);
 			break;
-		case AnimGroupNormal::OUCH:
+		case ANIM_GROUP_NORMAL::HOVER:
+			if (isRight) ChangeSprite(&kirby_hover_R);
+			else ChangeSprite(&kirby_hover_L);
 			break;
-		case AnimGroupNormal::HOVER:
-			if (!isHovering)
-			{
-				if (spitoutTime > 0)
-				{
-					STATE = AnimGroupNormal::SPITOUT;
-					kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-					kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-				}
-				else
-					STATE = AnimGroupNormal::IDLE;
-			}
+		case ANIM_GROUP_NORMAL::INHOLE:
+			if (isRight) ChangeSprite(&kirby_inhole_R);
+			else ChangeSprite(&kirby_inhole_L);
 			break;
-		case AnimGroupNormal::HOVER_END:
+		case ANIM_GROUP_NORMAL::INHOLEIT:
+			if (isRight) ChangeSprite(&kirby_inholeIt_R);
+			else ChangeSprite(&kirby_inholeIt_L);
 			break;
-		case AnimGroupNormal::HOVER_OUCH:
+		case ANIM_GROUP_NORMAL::INHOLEIT_MOVE:
+			if (isRight) ChangeSprite(&kirby_inholeIt_move_R);
+			else ChangeSprite(&kirby_inholeIt_move_L);
 			break;
-		case AnimGroupNormal::INHOLE:
-			if (isInholeIt) STATE = AnimGroupNormal::INHOLEIT;
-			else if (!isInhole) STATE = AnimGroupNormal::IDLE;
+		case ANIM_GROUP_NORMAL::INHOLEIT_DASH:
+			if (isRight) ChangeSprite(&kirby_inholeIt_dash_R);
+			else ChangeSprite(&kirby_inholeIt_dash_L);
 			break;
-		case AnimGroupNormal::INHOLEIT:
-			if (!isInholeIt)
-			{
-				if (consumeTime > 0) {
-					STATE = AnimGroupNormal::CONSUME;
-					kirby_consume.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f, false);
-				}
-				else {
-					STATE = AnimGroupNormal::SPITOUT;
-					kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-					kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-				}
-			}
-			else if (isJump)	STATE = AnimGroupNormal::INHOLEIT_JUMP;
-			else if (isDash)	STATE = AnimGroupNormal::INHOLEIT_DASH;
-			else if (isMove)	STATE = AnimGroupNormal::INHOLEIT_MOVE;
+		case ANIM_GROUP_NORMAL::INHOLEIT_JUMP:
+			if (isRight) ChangeSprite(&kirby_inholeIt_jump_R);
+			else ChangeSprite(&kirby_inholeIt_jump_L);
 			break;
-		case AnimGroupNormal::INHOLEIT_MOVE:
-			if (isJump) STATE = AnimGroupNormal::INHOLEIT_JUMP;
-			else if (!isMove) STATE = AnimGroupNormal::INHOLEIT;
+		case ANIM_GROUP_NORMAL::CONSUME:
+			ChangeSprite(&kirby_consume);
 			break;
-		case AnimGroupNormal::INHOLEIT_DASH:
-			if (isJump) STATE = AnimGroupNormal::INHOLEIT_JUMP;
-			else if (!isDash) STATE = AnimGroupNormal::INHOLEIT;
+		case ANIM_GROUP_NORMAL::SPITOUT:
+			if (isRight) ChangeSprite(&kirby_spitout_R);
+			else ChangeSprite(&kirby_spitout_L);
 			break;
-		case AnimGroupNormal::INHOLEIT_JUMP:
-			if (spitoutTime > 0) {
-				STATE = AnimGroupNormal::SPITOUT;
-				kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-				kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
-			}
-			else if (!isJump) STATE = AnimGroupNormal::INHOLEIT;
+		case ANIM_GROUP_NORMAL::OUCH:
 			break;
-		case AnimGroupNormal::INHOLEIT_OUCH:
-			break;
-		case AnimGroupNormal::CONSUME:
-			if (consumeTime <= 0) STATE = AnimGroupNormal::IDLE;
-			break;
-		case AnimGroupNormal::SPITOUT:
-			if (spitoutTime <= 0)
-			{
-				if (AIR_AREA)
-					STATE = AnimGroupNormal::FALLDOWN;
-				else
-					STATE = AnimGroupNormal::IDLE;
-			}
-			break;
-		case AnimGroupNormal::COPY:
-			break;
-		case AnimGroupNormal::OVER:
+		case ANIM_GROUP_NORMAL::OVER:
 			break;
 		default:
 			break;
 		}
 	}
-	else
+}
+
+void Player::UpdateAnimFSM()
+{
+	if (copyState == PLAYER_COPY_STATE::NORMAL)
 	{
-		if (isInhole)
+		ANIM_GROUP_NORMAL* tmpSTATE = static_cast<ANIM_GROUP_NORMAL*>(currentAnimGroup);
+		switch (*tmpSTATE)
 		{
-			STATE = AnimGroupNormal::INHOLE;
+		case ANIM_GROUP_NORMAL::IDLE:
+			if (isInhole)
+			{
+				*tmpSTATE = ANIM_GROUP_NORMAL::INHOLE;
+				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			}
+			else if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::JUMP;
+			else if (isDash) *tmpSTATE = ANIM_GROUP_NORMAL::DASH;
+			else if (isMove) *tmpSTATE = ANIM_GROUP_NORMAL::MOVE;
+			else if (isCrouch) *tmpSTATE = ANIM_GROUP_NORMAL::CROUCH;
+			break;
+		case ANIM_GROUP_NORMAL::MOVE:
+			if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::JUMP;
+			else if (AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
+			else if (!isMove) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::DASH:
+			if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::JUMP;
+			else if (AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
+			else if (!isDash) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::CROUCH:
+			if (slideTime > 0) *tmpSTATE = ANIM_GROUP_NORMAL::SLIDE;
+			else if (!isCrouch) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::SLIDE:
+			if (slideTime <= 0) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::JUMP:
+			if (isInhole) {
+				*tmpSTATE = ANIM_GROUP_NORMAL::INHOLE;
+				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			}
+			else if (isHovering) *tmpSTATE = ANIM_GROUP_NORMAL::HOVER;
+			else if (upVector > -0.009f) *tmpSTATE = ANIM_GROUP_NORMAL::JUMPDOWN;
+			else if (!isJump) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::JUMPDOWN:
+			if (isInhole) {
+				*tmpSTATE = ANIM_GROUP_NORMAL::INHOLE;
+				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			}
+			else if (isHovering) *tmpSTATE = ANIM_GROUP_NORMAL::HOVER;
+			else if (!isJump) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			else if (upVector > 5.0f) *tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
+			break;
+		case ANIM_GROUP_NORMAL::FALLDOWN:
+			if (isInhole) {
+				*tmpSTATE = ANIM_GROUP_NORMAL::INHOLE;
+				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
+			}
+			else if (isHovering) *tmpSTATE = ANIM_GROUP_NORMAL::HOVER;
+			else if (!AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::OUCH:
+			break;
+		case ANIM_GROUP_NORMAL::HOVER:
+			if (!isHovering)
+			{
+				if (spitoutTime > 0)
+				{
+					*tmpSTATE = ANIM_GROUP_NORMAL::SPITOUT;
+					kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+					kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+				}
+				else
+					*tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			}
+			break;
+		case ANIM_GROUP_NORMAL::HOVER_END:
+			break;
+		case ANIM_GROUP_NORMAL::HOVER_OUCH:
+			break;
+		case ANIM_GROUP_NORMAL::INHOLE:
+			if (isInholeIt) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
+			else if (!isInhole) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT:
+			if (!isInholeIt)
+			{
+				if (consumeTime > 0) {
+					*tmpSTATE = ANIM_GROUP_NORMAL::CONSUME;
+					kirby_consume.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f, false);
+				}
+				else {
+					*tmpSTATE = ANIM_GROUP_NORMAL::SPITOUT;
+					kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+					kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+				}
+			}
+			else if (isJump)	*tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT_JUMP;
+			else if (isDash)	*tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT_DASH;
+			else if (isMove)	*tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT_MOVE;
+			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT_MOVE:
+			if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT_JUMP;
+			else if (!isMove) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
+			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT_DASH:
+			if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT_JUMP;
+			else if (!isDash) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
+			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT_JUMP:
+			if (spitoutTime > 0) {
+				*tmpSTATE = ANIM_GROUP_NORMAL::SPITOUT;
+				kirby_spitout_L.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+				kirby_spitout_R.ChangeAnim(ANIMSTATE::ONCE, 1 / 12.0f);
+			}
+			else if (!isJump) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
+			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT_OUCH:
+			break;
+		case ANIM_GROUP_NORMAL::CONSUME:
+			if (consumeTime <= 0) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			break;
+		case ANIM_GROUP_NORMAL::SPITOUT:
+			if (spitoutTime <= 0)
+			{
+				if (AIR_AREA)
+					*tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
+				else
+					*tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
+			}
+			break;
+		case ANIM_GROUP_NORMAL::COPY:
+			break;
+		case ANIM_GROUP_NORMAL::OVER:
+			break;
+		default:
+			break;
 		}
-		else if (isJump)
-		{
-			if (upVector < -0.009)
-				STATE = AnimGroupNormal::JUMP;
-			else
-				STATE = AnimGroupNormal::JUMPDOWN;
-		}
-		else if (isHovering)
-		{
-			STATE = AnimGroupNormal::HOVER;
-		}
-		else if (slideTime > 0)
-		{
-			STATE = AnimGroupNormal::SLIDE;
-		}
-		else if (isCrouch)
-		{
-			STATE = AnimGroupNormal::CROUCH;
-		}
-		else if (GameManager::IsColorMatch(pointColor, 255, 0, 255) || GameManager::IsColorMatch(pointColor, 0, 255, 0))
-		{
-			STATE = AnimGroupNormal::JUMPDOWN;
-		}
-		else if (isDash)
-		{
-			STATE = AnimGroupNormal::DASH;
-		}
-		else if (isMove)
-		{
-			STATE = AnimGroupNormal::MOVE;
-		}
-		else
-		{
-			STATE = AnimGroupNormal::IDLE;
-		}
+
 	}
 }

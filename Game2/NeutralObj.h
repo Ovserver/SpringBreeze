@@ -1,18 +1,24 @@
 #pragma once
+enum class OBJECT_SERIAL_NAME
+{
+	STAR_BULLET,
+	KIRBY_BREATH,
+	WHISPY_BREATH,
+	FOOD,
+	LIFEUP,
+	MAX_TOMATO
+};
 class NeutralObj : public ObImage
 {
 public:
-	NeutralObj(wstring imageFname)
-	{
-		dir = Vector2(0, 0), speed = 0;
-		LoadFile(imageFname);
-		SetScale().x = imageSize.x * IMG_SCALE;
-		SetScale().y = imageSize.y * IMG_SCALE;		
-	}
+	//생성자 호출 시에 serial name에 따라 자동으로 초기화합니다
+	NeutralObj(OBJECT_SERIAL_NAME _serialName);
 	void Update();
 	void SetDirSpeed(Vector2 _dir, float _speed) { dir = _dir; speed = _speed; }
+	OBJECT_SERIAL_NAME GetSerialName() const { return serialName; }
 private:
-	Vector2	dir;
 	float	speed;
+	Vector2	dir;
+	OBJECT_SERIAL_NAME serialName;
 };
 
