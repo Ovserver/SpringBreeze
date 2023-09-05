@@ -7,7 +7,8 @@ class Player;
 enum class ENEMY_SERIAL_NAME
 {
 	WADDLE_DEE,
-	WADDLE_DOO
+	WADDLE_DOO,
+	WHISPY_WOOD
 };
 
 class Enemy : public ObImage
@@ -20,9 +21,11 @@ public:
 	bool				isStay;
 	bool				isRight;
 	bool				isMove;
+	bool				isStasisType;
 	Color				pointColor;
 	Vector2				initPos;
 public:
+	Enemy() { hp = 10; maxHp = 10; isInhole = false; isDamage = false; isStay = false; isRight = false; isMove = false; }
 	Enemy(Vector2 _initPos, int _maxHp, ENEMY_SERIAL_NAME _serialName) :
 		hp(_maxHp), maxHp(_maxHp), isInhole(false), isStay(false), initPos(_initPos), serialName(_serialName)
 	{
@@ -32,19 +35,20 @@ public:
 		SetPivot() = OFFSET_B;
 	}
 	// 생성자 호출 시의 serial name에 따라 자동으로 이미지를 선택하고 초기화합니다
-	void Init();
-	void Update();
-	void Render();
+	virtual void Init();
+	virtual void Update();
+	virtual void Render();
 	void Damage(int value);
-	void UpdateSpritePos();
-	void UpdatePointColor(Stage* stage);
+	virtual void UpdateSpritePos();
 	ENEMY_SERIAL_NAME GetSerialName() const { return serialName; }
-private:
+protected:
 	float				accel;
 	float				upVector;
 	float				fowardVector;
 	ObImage				enemy_Idle;
+	ObImage				enemy_attack;
 	ObImage				enemy_move;
 	ObImage				enemy_ouch;
+	ObImage				enemy_over;
 	ENEMY_SERIAL_NAME	serialName;
 };

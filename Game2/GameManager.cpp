@@ -42,6 +42,9 @@ Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgNa
 
 	mImagePos.push_back(Vector2(0, 0));
 	mBGImagePos.push_back(Vector2(0, 0));
+
+	limitCameraPosX = RIGHT;
+	limitCameraPosY = RIGHT;
 }
 void Stage::Init()
 {
@@ -55,6 +58,31 @@ void Stage::Update()
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
 		mEnemyList[i]->Update();
+	}
+}
+void Stage::LateUpdate()
+{
+	app.maincam->SetWorldPos(MAINPLAYER->GetWorldPos());
+	if (app.maincam->GetWorldPos().y < limitCameraPosY.x * IMG_SCALE)
+		app.maincam->SetWorldPosY(limitCameraPosY.x * IMG_SCALE);
+	if (app.maincam->GetWorldPos().y > limitCameraPosY.y * IMG_SCALE)
+		app.maincam->SetWorldPosY(limitCameraPosY.y * IMG_SCALE);
+
+	if (app.maincam->GetWorldPos().x < limitCameraPosX.x * IMG_SCALE)
+		app.maincam->SetWorldPosX(limitCameraPosX.x * IMG_SCALE);
+	if (app.maincam->GetWorldPos().x > limitCameraPosX.y * IMG_SCALE)
+		app.maincam->SetWorldPosX(limitCameraPosX.y * IMG_SCALE);
+	SetBGImagePos(app.maincam->GetWorldPos());
+	if (mBGType == BG_TYPE::ONCE)
+	{
+		float camX, camY;
+		camX = abs(app.maincam->GetWorldPos().x / (limitCameraPosX.y * IMG_SCALE));
+		camY = abs(app.maincam->GetWorldPos().y / (limitCameraPosY.y * IMG_SCALE));
+		//cout << camX << "  " << camY << endl;
+		mBGImage[0]->uv.x;
+		mBGImage[0]->uv.z;
+		mBGImage[0]->uv.y = 0 + camY * 0.05f;
+		mBGImage[0]->uv.w = 1 + camY * 0.05f;
 	}
 }
 void Stage::Render()
@@ -77,20 +105,16 @@ void Stage::Render()
 		mEnemyList[i]->Render();
 	}
 }
-void Stage::SetImagePos(float x, float y)
+void Stage::SetImagePos(Vector2 pos)
 {
-	mImage[0]->SetWorldPosX(mImagePos[0].x + x);
-	mImage[0]->SetWorldPosY(mImagePos[0].x + y);
-
-	mCollider->SetWorldPosX(x);
-	mCollider->SetWorldPosY(y);
+	mImage[0]->SetWorldPos(mImagePos[0] + pos);
+	mCollider->SetWorldPos(pos);
 }
-void Stage::SetBGImagePos(float x, float y)
+void Stage::SetBGImagePos(Vector2 pos)
 {
 	for (size_t i = 0; i < mBGImage.size(); i++)
 	{
-		mBGImage[i]->SetWorldPosX(mBGImagePos[i].x + x);
-		mBGImage[i]->SetWorldPosY(mBGImagePos[i].y + y);
+		mBGImage[i]->SetWorldPos(mBGImagePos[i] + pos);
 	}
 }
 void Stage::AddImage(wstring _stageImgName, Vector2 imagePos)
@@ -144,12 +168,18 @@ void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType,
 {
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
+		//cout << "i " << i << "/isvi : "<<mEnemyList[i]->isVisible << "/intersect : " << col->Intersect(mEnemyList[i]) << (mEnemyList[i]->hp) <<endl;
+		cout << (mEnemyList[i]->collider == COLLIDER::RECT) << endl;
+		//cout << col->GetWorldPos().x << " XX " << mEnemyList[i]->GetWorldPos().x << endl;
+		//cout << col->GetWorldPos().y << " YY " << mEnemyList[i]->GetWorldPos().y << endl;
 		if (mEnemyList[i]->isVisible && col->Intersect(mEnemyList[i]))
 		{
-			if (checkType == COLLISION_CHECK_TYPE::INHOLE)
+			cout << "colcheck" << endl;
+			if (!mEnemyList[i]->isStasisType && checkType == COLLISION_CHECK_TYPE::INHOLE)
 				mEnemyList[i]->isInhole = true;
 			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE)
 			{
+				cout << "damaged" << endl;
 				mEnemyList[i]->Damage(damage);
 				col->isVisible = false;
 				return;
@@ -216,6 +246,32 @@ bool GameManager::ChangeMainStage(wstring _stageImgName, int posListNum)
 	return false;
 }
 
+Color GameManager::GetPointColor(GameObject* gameObject)
+{
+	ObImage* stageInfo = MainStage->mCollider;
+	wstring fileName = MainStage->mColFName;
+
+	Vector2 PixelPos = gameObject->GetWorldPos() - stageInfo->GetWorldPos();
+	PixelPos /= IMG_SCALE;
+
+	// boundary values [X (0 ~ imageSize.x), Y (0 ~ imageSize.y)]
+	if (PixelPos.x < 0) PixelPos.x = 0;
+	if (PixelPos.x > stageInfo->imageSize.x) PixelPos.x = stageInfo->imageSize.x;
+	if (PixelPos.y > 0) PixelPos.y = 0;
+	if (PixelPos.y < 0) PixelPos.y *= -1;
+	if (PixelPos.y > stageInfo->imageSize.y) PixelPos.y = stageInfo->imageSize.y;
+
+	Color pointColor;
+	// GetPixels() : it's 0,0 Pixels pointer. is uInt8(1byte)
+	// PixelPos.x  : 1Pixel is 32bit(RGBA) but, layout info(BGRA)
+	// PixelPos.y  : Access the next row ->	Add all pixels from the previous row
+	pointColor.w = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 3);
+	pointColor.x = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 2);
+	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
+	pointColor.z = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4));
+
+	return pointColor;
+}
 void UIManager::Init()
 {
 	UI_standard = new ObImage();

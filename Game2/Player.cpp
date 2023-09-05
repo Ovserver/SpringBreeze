@@ -588,7 +588,7 @@ void Player::Update()
 			while (INTERPOL_AREA_RISE)
 			{
 				MoveWorldPos(UP);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		if (INTERPOL_AREA_DESC_SLOPE && !isJump)
@@ -596,7 +596,7 @@ void Player::Update()
 			while (INTERPOL_AREA_DESC_SLOPE)
 			{
 				MoveWorldPos(DOWN);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		if (INTERPOL_AREA_DESC)
@@ -604,7 +604,7 @@ void Player::Update()
 			while (INTERPOL_AREA_DESC)
 			{
 				MoveWorldPos(DOWN);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		if (INTERPOL_AREA_PULL_LEFT)
@@ -613,7 +613,7 @@ void Player::Update()
 			while (INTERPOL_AREA_PULL_LEFT)
 			{
 				MoveWorldPos(LEFT);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		if (INTERPOL_AREA_PULL_RIGHT)
@@ -622,7 +622,7 @@ void Player::Update()
 			while (INTERPOL_AREA_PULL_RIGHT)
 			{
 				MoveWorldPos(RIGHT);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		UpdateSpritePos();
@@ -639,7 +639,7 @@ void Player::Update()
 
 void Player::LateUpdate()
 {
-	UpdatePointColor(MAINSTAGE);
+	UPDATE_COLOR;
 	UpdateAnimFSM();
 	UpdateAnim();
 }
@@ -816,6 +816,7 @@ void Player::UpdateAnimFSM()
 				kirby_inhole_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_inhole_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			}
+			else if (isInholeIt) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
 			else if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::JUMP;
 			else if (isDash) *tmpSTATE = ANIM_GROUP_NORMAL::DASH;
 			else if (isMove) *tmpSTATE = ANIM_GROUP_NORMAL::MOVE;

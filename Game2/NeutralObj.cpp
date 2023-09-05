@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "GameManager.h"
 #include "NeutralObj.h"
 
 NeutralObj::NeutralObj(OBJECT_SERIAL_NAME _serialName)
@@ -23,5 +24,8 @@ void NeutralObj::Update()
 	if (isVisible)
 	{
 		MoveWorldPos(dir * speed * DELTA);
+		UPDATE_COLOR;
+		if (WALL_AREA_LEFT || WALL_AREA_RIGHT)
+			isVisible = false;
 	}
 }

@@ -12,10 +12,11 @@ void Enemy::Init()
 	isStay = false;
 	isDamage = false;
 	isVisible = true;
-	isMove = true;
 	if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
 	{
-		enemy_Idle.LoadFile(L"waddleDoo_idle.png");	
+		isStasisType = false;
+		isMove = true;
+		enemy_Idle.LoadFile(L"waddleDoo_idle.png");
 		enemy_move.LoadFile(L"waddleDoo_idle.png");
 		enemy_ouch.LoadFile(L"waddleDoo_ouch.png");
 
@@ -28,20 +29,19 @@ void Enemy::Init()
 		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
 		enemy_move.SetPivot() = OFFSET_B;
 		enemy_move.maxFrame.x = 2;
-		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);		
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);
 
-		enemy_ouch.SetScale().x = enemy_Idle.imageSize.x * IMG_SCALE;
-		enemy_ouch.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
+		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
 		enemy_ouch.SetPivot() = OFFSET_B;
 
-		SetScale().x = enemy_Idle.GetScale().x;
-		SetScale().y = enemy_Idle.GetScale().y;
+		SetScale().x = enemy_ouch.GetScale().x;
+		SetScale().y = enemy_ouch.GetScale().y;
 	}
 }
 
 void Enemy::Update()
 {
-
 	if (isInhole)
 	{
 		Vector2 dir = MAINPLAYER->GetWorldPos() - GetWorldPos();
@@ -74,7 +74,7 @@ void Enemy::Update()
 			isRight = false;
 			while (INTERPOL_AREA_PULL_LEFT) {
 				MoveWorldPos(LEFT);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 		else if (INTERPOL_AREA_PULL_RIGHT)
@@ -82,78 +82,58 @@ void Enemy::Update()
 			isRight = true;
 			while (INTERPOL_AREA_PULL_RIGHT) {
 				MoveWorldPos(RIGHT);
-				UpdatePointColor(MAINSTAGE);
+				UPDATE_COLOR;
 			}
 		}
 	}
-	UpdatePointColor(MAINSTAGE);
+	UPDATE_COLOR;
 }
 
-void Enemy::UpdatePointColor(Stage* stage)
-{
-	ObImage* stageInfo = stage->mCollider;
-	wstring fileName = stage->mColFName;
-
-	Vector2 PixelPos = GetWorldPos() - stageInfo->GetWorldPos();
-	PixelPos /= IMG_SCALE;
-
-	// boundary values [X (0 ~ imageSize.x), Y (0 ~ imageSize.y)]
-	if (PixelPos.x < 0) PixelPos.x = 0;
-	if (PixelPos.x > stageInfo->imageSize.x) PixelPos.x = stageInfo->imageSize.x;
-	if (PixelPos.y > 0) PixelPos.y = 0;
-	if (PixelPos.y < 0) PixelPos.y *= -1;
-	if (PixelPos.y > stageInfo->imageSize.y) PixelPos.y = stageInfo->imageSize.y;
-
-	// GetPixels() : it's 0,0 Pixels pointer. is uInt8(1byte)
-	// PixelPos.x  : 1Pixel is 32bit(RGBA) but, layout info(BGRA)
-	// PixelPos.y  : Access the next row ->	Add all pixels from the previous row
-	pointColor.w = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 3);
-	pointColor.x = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 2);
-	pointColor.y = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4) + 1);
-	pointColor.z = (UINT8) * ((TEXTURE->GetTextureData(fileName).GetPixels() + (int)PixelPos.x * 4 + (int)PixelPos.y * stageInfo->imageSize.x * 4));
-}
 void Enemy::Render()
 {
 	UpdateSpritePos();
 	if (isVisible)
 	{
-		if (isDamage)
+		if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
 		{
-			if (isRight)
+			if (isDamage || isInhole)
 			{
-				enemy_ouch.SetRotation().y = 0;
-				enemy_ouch.Render();
-			}
-			else {
-				enemy_ouch.SetRotation().y = 0;
-				enemy_ouch.Render();
+				if (isRight)
+				{
+					enemy_ouch.SetRotation().y = 0;
+					enemy_ouch.Render();
+				}
+				else {
+					enemy_ouch.SetRotation().y = 0;
+					enemy_ouch.Render();
 
+				}
 			}
-		}
-		else if (isMove)
-		{
-			if (isRight)
+			else if (isMove)
 			{
-				enemy_move.SetRotation().y = 0;
-				enemy_move.Render();
-			}
-			else
-			{
-				enemy_move.SetRotation().y = 180 * ToRadian;
-				enemy_move.Render();
-			}
-		}
-		else
-		{
-			if (isRight)
-			{
-				enemy_move.SetRotation().y = 0;
-				enemy_move.Render();
+				if (isRight)
+				{
+					enemy_move.SetRotation().y = 0;
+					enemy_move.Render();
+				}
+				else
+				{
+					enemy_move.SetRotation().y = 180 * ToRadian;
+					enemy_move.Render();
+				}
 			}
 			else
 			{
-				enemy_move.SetRotation().y = 180 * ToRadian;
-				enemy_move.Render();
+				if (isRight)
+				{
+					enemy_move.SetRotation().y = 0;
+					enemy_move.Render();
+				}
+				else
+				{
+					enemy_move.SetRotation().y = 180 * ToRadian;
+					enemy_move.Render();
+				}
 			}
 		}
 	}
@@ -164,13 +144,15 @@ void Enemy::Damage(int value)
 	hp -= value;
 	if (hp <= 0)
 	{
-		isVisible = false;
+		if (!isStasisType)
+			isVisible = false;
 	}
 }
 
 void Enemy::UpdateSpritePos()
 {
 	enemy_Idle.SetWorldPos(GetWorldPos());
+	enemy_attack.SetWorldPos(GetWorldPos());
 	enemy_move.SetWorldPos(GetWorldPos());
 	enemy_ouch.SetWorldPos(GetWorldPos());
 }

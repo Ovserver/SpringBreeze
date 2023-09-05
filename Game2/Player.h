@@ -1,15 +1,5 @@
 #pragma once
 
-#define AIR_AREA GameManager::IsColorMatch(pointColor, 255, 0, 255)					//Non-Render Color
-#define WALL_AREA_LEFT GameManager::IsColorMatch(pointColor, 0, 255, 0)				//Green
-#define WALL_AREA_RIGHT GameManager::IsColorMatch(pointColor, 0, 0, 255)			//Blue
-#define LANDING_AREA GameManager::IsColorMatch(pointColor, 255, 0, 0)				//Red
-#define INTERPOL_AREA_RISE GameManager::IsColorMatch(pointColor, 0, 0, 0)			//Black
-#define INTERPOL_AREA_DESC_SLOPE GameManager::IsColorMatch(pointColor, 0, 255, 255)	//Sky
-#define INTERPOL_AREA_DESC GameManager::IsColorMatch(pointColor, 128, 255, 255)		//Bright Sky
-#define INTERPOL_AREA_PULL_LEFT GameManager::IsColorMatch(pointColor, 128, 255, 0)	//Grass
-#define INTERPOL_AREA_PULL_RIGHT GameManager::IsColorMatch(pointColor, 128, 0, 255)	//Purple
-
 class Enemy;
 
 enum class PLAYER_COPY_STATE

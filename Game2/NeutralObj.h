@@ -18,6 +18,7 @@ public:
 	OBJECT_SERIAL_NAME GetSerialName() const { return serialName; }
 private:
 	float	speed;
+	Color	pointColor;
 	Vector2	dir;
 	OBJECT_SERIAL_NAME serialName;
 };
