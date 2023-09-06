@@ -25,7 +25,7 @@ void Player::Init()
 	slideTime = 0;
 	consumeTime = 0;
 	spitoutTime = 0;
-	slidePower = 1.8f;
+	slidePower = 3.5f;
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
@@ -74,6 +74,7 @@ void Player::Init()
 	for (size_t i = 0; i < maxStarBullet; i++)
 	{
 		starBulletList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::STAR_BULLET));
+		starBulletStrList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::STAR_BULLET_STRENGTH));
 	}
 
 	inholeArea.SetScale().x = 50 * IMG_SCALE;
@@ -375,13 +376,34 @@ void Player::Update()
 		{
 			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
 		}
-
+		cout << fowardVector << endl;
 		if (cmdTime > 0) cmdTime -= DELTA;	else { cmdTime = 0; MecanimManager::ComboClear(); }
 		if (consumeTime > 0) consumeTime -= DELTA;
 		if (spitoutTime > 0) spitoutTime -= DELTA;
 		if (slideTime > 0) { slideTime -= DELTA; }
-		else { fowardVector = 0; }
-
+		else if (slideTime < 0) { slideTime = 0; fowardVector = 0; }
+		if (AIR_AREA) slideTime = 0;
+		if (fowardVector > maxFowardVectorSlide) fowardVector = maxFowardVectorSlide;
+		if (fowardVector < -maxFowardVectorSlide) fowardVector = -maxFowardVectorSlide;
+		if (isDash)
+		{
+			if (fowardVector > maxFowardVectorDash) fowardVector = maxFowardVectorDash;
+			if (fowardVector < -maxFowardVectorDash) fowardVector = -maxFowardVectorDash;
+		}
+		else if (isMove)
+		{
+			if (fowardVector > maxFowardVector) fowardVector = maxFowardVector;
+			if (fowardVector < -maxFowardVector) fowardVector = -maxFowardVector;
+		}
+		if (!isMove && slideTime <= 0)
+		{
+			if (fowardVector > 0.05f)
+				fowardVector -= DELTA * 5;
+			else if (fowardVector < -0.05f)
+				fowardVector += DELTA * 5;
+			else
+				fowardVector = 0;
+		}
 		MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
 		// arrow up key
 		if (INPUT->KeyDown(VK_UP))
@@ -445,7 +467,17 @@ void Player::Update()
 			{
 				isRight = false;
 				isMove = true;
-				MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
+				if (isDash)
+				{
+					if (fowardVector >= -maxFowardVectorDash)
+						fowardVector -= DELTA * 10;
+				}
+				else
+				{
+					if (fowardVector >= -maxFowardVector)
+						fowardVector -= DELTA * 10;
+				}
+				//MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
 			}
 			else
 			{
@@ -459,7 +491,16 @@ void Player::Update()
 			{
 				isRight = true;
 				isMove = true;
-				MoveWorldPos(RIGHT * DELTA * 150.0f * (isDash / 2.0f + 1));
+				if (isDash)
+				{
+					if (fowardVector <= maxFowardVectorDash)
+						fowardVector += DELTA * 10;
+				}
+				else
+				{
+					if (fowardVector <= maxFowardVector)
+						fowardVector += DELTA * 10;
+				}
 			}
 			else
 			{
@@ -472,6 +513,7 @@ void Player::Update()
 			isDash = false;
 			isMove = false;
 		}
+		
 		// A key
 		if (INPUT->KeyDown('A'))
 		{
@@ -536,17 +578,33 @@ void Player::Update()
 				{
 					inholeEnemyList[i]->isStay = false;
 				}
-				inholeEnemyList.clear();
-				for (size_t i = 0; i < maxStarBullet; i++)
+				if (inholeEnemyList.size() >= 2)
 				{
-					if (!starBulletList[i]->isVisible)
+					for (size_t i = 0; i < maxStarBullet; i++)
 					{
-						starBulletList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
-						starBulletList[i]->isVisible = true;
-						starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 600.0f);
-						break;
+						if (!starBulletStrList[i]->isVisible)
+						{
+							starBulletStrList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
+							starBulletStrList[i]->isVisible = true;
+							starBulletStrList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 600.0f);
+							break;
+						}
 					}
 				}
+				else
+				{
+					for (size_t i = 0; i < maxStarBullet; i++)
+					{
+						if (!starBulletList[i]->isVisible)
+						{
+							starBulletList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
+							starBulletList[i]->isVisible = true;
+							starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 500.0f);
+							break;
+						}
+					}
+				}
+				inholeEnemyList.clear();
 
 			}
 			else if (isHovering)
@@ -610,6 +668,7 @@ void Player::Update()
 		if (INTERPOL_AREA_PULL_LEFT)
 		{
 			lockInRight = true;
+			fowardVector = 0;
 			while (INTERPOL_AREA_PULL_LEFT)
 			{
 				MoveWorldPos(LEFT);
@@ -619,6 +678,7 @@ void Player::Update()
 		if (INTERPOL_AREA_PULL_RIGHT)
 		{
 			lockInLeft = true;
+			fowardVector = 0;
 			while (INTERPOL_AREA_PULL_RIGHT)
 			{
 				MoveWorldPos(RIGHT);
@@ -628,6 +688,11 @@ void Player::Update()
 		UpdateSpritePos();
 		for (size_t i = 0; i < maxStarBullet; i++)
 		{
+			if (starBulletStrList[i]->isVisible)
+			{
+				starBulletStrList[i]->Update();
+				MAINSTAGE->EnemyCollisionCheck(starBulletStrList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ASSAULT, 20);
+			}
 			if (starBulletList[i]->isVisible)
 			{
 				starBulletList[i]->Update();
@@ -653,7 +718,8 @@ void Player::Render()
 	inholeArea.Render();
 	for (size_t i = 0; i < maxStarBullet; i++)
 	{
-		starBulletList[i]->Render();
+		starBulletList[i]->DrawCall();
+		starBulletStrList[i]->DrawCall();
 	}
 }
 
@@ -818,6 +884,7 @@ void Player::UpdateAnimFSM()
 			}
 			else if (isInholeIt) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
 			else if (isJump) *tmpSTATE = ANIM_GROUP_NORMAL::JUMP;
+			else if (AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
 			else if (isDash) *tmpSTATE = ANIM_GROUP_NORMAL::DASH;
 			else if (isMove) *tmpSTATE = ANIM_GROUP_NORMAL::MOVE;
 			else if (isCrouch) *tmpSTATE = ANIM_GROUP_NORMAL::CROUCH;
@@ -834,6 +901,7 @@ void Player::UpdateAnimFSM()
 			break;
 		case ANIM_GROUP_NORMAL::CROUCH:
 			if (slideTime > 0) *tmpSTATE = ANIM_GROUP_NORMAL::SLIDE;
+			else if (AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::FALLDOWN;
 			else if (!isCrouch) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
 			break;
 		case ANIM_GROUP_NORMAL::SLIDE:
@@ -945,6 +1013,5 @@ void Player::UpdateAnimFSM()
 		default:
 			break;
 		}
-
 	}
 }

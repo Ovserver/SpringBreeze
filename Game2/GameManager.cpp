@@ -18,6 +18,8 @@ ObRect* UIManager::backfaceUI = nullptr;
 
 Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName)
 {
+	mCamLock = false;
+	mCamLockEventObject = nullptr;
 	mImage.push_back(new ObImage());
 	mImageFName = _stageImgName;
 	mImage[0]->LoadFile(mImageFName);
@@ -43,8 +45,8 @@ Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgNa
 	mImagePos.push_back(Vector2(0, 0));
 	mBGImagePos.push_back(Vector2(0, 0));
 
-	limitCameraPosX = RIGHT;
-	limitCameraPosY = RIGHT;
+	mLimitCameraPosX = RIGHT;
+	mLimitCameraPosY = RIGHT;
 }
 void Stage::Init()
 {
@@ -63,26 +65,54 @@ void Stage::Update()
 void Stage::LateUpdate()
 {
 	app.maincam->SetWorldPos(MAINPLAYER->GetWorldPos());
-	if (app.maincam->GetWorldPos().y < limitCameraPosY.x * IMG_SCALE)
-		app.maincam->SetWorldPosY(limitCameraPosY.x * IMG_SCALE);
-	if (app.maincam->GetWorldPos().y > limitCameraPosY.y * IMG_SCALE)
-		app.maincam->SetWorldPosY(limitCameraPosY.y * IMG_SCALE);
 
-	if (app.maincam->GetWorldPos().x < limitCameraPosX.x * IMG_SCALE)
-		app.maincam->SetWorldPosX(limitCameraPosX.x * IMG_SCALE);
-	if (app.maincam->GetWorldPos().x > limitCameraPosX.y * IMG_SCALE)
-		app.maincam->SetWorldPosX(limitCameraPosX.y * IMG_SCALE);
+	if (app.maincam->GetWorldPos().y < mLimitCameraPosY.x * IMG_SCALE)
+		app.maincam->SetWorldPosY(mLimitCameraPosY.x * IMG_SCALE);
+	if (app.maincam->GetWorldPos().y > mLimitCameraPosY.y * IMG_SCALE)
+		app.maincam->SetWorldPosY(mLimitCameraPosY.y * IMG_SCALE);
+
+	if (app.maincam->GetWorldPos().x < mLimitCameraPosX.x * IMG_SCALE)
+		app.maincam->SetWorldPosX(mLimitCameraPosX.x * IMG_SCALE);
+	if (app.maincam->GetWorldPos().x > mLimitCameraPosX.y * IMG_SCALE)
+		app.maincam->SetWorldPosX(mLimitCameraPosX.y * IMG_SCALE);
+
+	if (mCamLock)
+		app.maincam->SetWorldPos(mCamLockPos * IMG_SCALE);
+
 	SetBGImagePos(app.maincam->GetWorldPos());
+
 	if (mBGType == BG_TYPE::ONCE)
 	{
 		float camX, camY;
-		camX = abs(app.maincam->GetWorldPos().x / (limitCameraPosX.y * IMG_SCALE));
-		camY = abs(app.maincam->GetWorldPos().y / (limitCameraPosY.y * IMG_SCALE));
+		camX = abs(app.maincam->GetWorldPos().x / (mLimitCameraPosX.y * IMG_SCALE));
+		camY = abs(app.maincam->GetWorldPos().y / (mLimitCameraPosY.y * IMG_SCALE));
 		//cout << camX << "  " << camY << endl;
 		mBGImage[0]->uv.x;
 		mBGImage[0]->uv.z;
 		mBGImage[0]->uv.y = 0 + camY * 0.05f;
 		mBGImage[0]->uv.w = 1 + camY * 0.05f;
+	}
+	if (mCamLockEventObject)
+	{
+		if (mCamLockEventObject->isVisible)
+		{
+			if (MAINPLAYER->GetWorldPos().x > mCamLockRangePosMin.x * IMG_SCALE &&
+				MAINPLAYER->GetWorldPos().x < mCamLockRangePosMax.x * IMG_SCALE &&
+				MAINPLAYER->GetWorldPos().y > mCamLockRangePosMin.y * IMG_SCALE &&
+				MAINPLAYER->GetWorldPos().y < mCamLockRangePosMax.y * IMG_SCALE)
+			{
+				mCamLock = true;
+			}
+		}
+		else
+		{
+			if (mCamLockEventType == CAM_LOCKIN_TYPE::SINGLE && mCamLock)
+				mCamLock = false;
+		}
+	}
+	for (size_t i = 0; i < mEnemyList.size(); i++)
+	{
+		mEnemyList[i]->LateUpdate();
 	}
 }
 void Stage::Render()
@@ -95,10 +125,9 @@ void Stage::Render()
 	{
 		mImage[i]->Render();
 	}
-	//mCollider->Render();
 	for (size_t i = 0; i < mPortalList.size(); i++)
 	{
-		mPortalList[i].rect.Render();
+		mPortalList[i].Render();
 	}
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
@@ -142,12 +171,9 @@ void Stage::AddEnemy(Enemy* enemy)
 {
 	mEnemyList.push_back(enemy);
 }
-void Stage::AddPortal(ObRect* _rect, wstring _destStageName, int _initPosNum)
+void Stage::AddPortal(Vector2 pos, wstring _destStageName, int _initPosNum)
 {
-	Portal temp;
-	temp.rect.SetPivot() = OFFSET_B;
-	temp.rect.collider = COLLIDER::RECT;
-	temp.rect.isFilled = false;
+	Portal temp = Portal(pos);
 	temp.destStageFname = _destStageName;
 	temp.initPosNum = _initPosNum;
 	mPortalList.push_back(temp);
@@ -166,23 +192,42 @@ bool Stage::PortalCollisionCheck(GameObject* col)
 }
 void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType, int damage)
 {
+	NeutralObj* neutraltmp = (NeutralObj*)col;
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
-		//cout << "i " << i << "/isvi : "<<mEnemyList[i]->isVisible << "/intersect : " << col->Intersect(mEnemyList[i]) << (mEnemyList[i]->hp) <<endl;
-		cout << (mEnemyList[i]->collider == COLLIDER::RECT) << endl;
-		//cout << col->GetWorldPos().x << " XX " << mEnemyList[i]->GetWorldPos().x << endl;
-		//cout << col->GetWorldPos().y << " YY " << mEnemyList[i]->GetWorldPos().y << endl;
 		if (mEnemyList[i]->isVisible && col->Intersect(mEnemyList[i]))
 		{
-			cout << "colcheck" << endl;
 			if (!mEnemyList[i]->isStasisType && checkType == COLLISION_CHECK_TYPE::INHOLE)
 				mEnemyList[i]->isInhole = true;
 			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE)
 			{
-				cout << "damaged" << endl;
 				mEnemyList[i]->Damage(damage);
 				col->isVisible = false;
 				return;
+			}
+			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ASSAULT)
+			{
+				if (neutraltmp->interactObjList.size() == 0)
+				{
+					mEnemyList[i]->Damage(damage);
+					neutraltmp->interactObjList.push_back(mEnemyList[i]);
+				}
+				else
+				{
+					for (size_t j = 0; j < neutraltmp->interactObjList.size(); j++)
+					{
+						//cout << neutraltmp->interactObjList[i] << " assault " << mEnemyList[i] << endl;
+						if (neutraltmp->interactObjList[j] == mEnemyList[i])
+						{
+							break;
+						}
+						else
+						{
+							mEnemyList[i]->Damage(damage);
+							neutraltmp->interactObjList.push_back(mEnemyList[i]);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -223,7 +268,7 @@ bool MecanimManager::ComboMatch(ComboMap* comboMap)
 	return true;
 }
 
-bool GameManager::IsColorMatch(Color& cl, float r, float g, float b)
+bool GameManager::IsColorMatch(Color& cl, float r, float g, float b, float a)
 {
 	if (cl.x == r && cl.y == g && cl.z == b)
 		return true;

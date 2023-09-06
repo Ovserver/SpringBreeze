@@ -53,6 +53,7 @@ public:
 	ANIM_GROUP_NORMAL	STATE;
 	vector<Enemy*>		inholeEnemyList;
 	vector<NeutralObj*>	starBulletList;
+	vector<NeutralObj*>	starBulletStrList;
 public:
 	void Init();
 	void Release();
@@ -64,27 +65,30 @@ public:
 	void SetAnimGroup(PLAYER_COPY_STATE copyState);
 private:
 
-	bool	isRight;
-	bool	isCrouch;
-	bool	isJump;
-	bool	isMove;
-	bool	isDash;
-	bool	isHovering;
-	bool	isInhole;
-	bool	isInholeIt;
-	bool	jumpable;
-	bool	lockInLeft;
-	bool	lockInRight;
-	float	slideTime;
+	bool		isRight;
+	bool		isCrouch;
+	bool		isJump;
+	bool		isMove;
+	bool		isDash;
+	bool		isHovering;
+	bool		isInhole;
+	bool		isInholeIt;
+	bool		jumpable;
+	bool		lockInLeft;
+	bool		lockInRight;
+	float		slideTime;
 	const float	slideTimeInterval = 0.6f;
-	float	slidePower;
-	float	upVector;
-	float	fowardVector;
-	float	cmdTime;
+	float		slidePower;
+	float		upVector;
+	float		fowardVector;
+	const float	maxFowardVector = 1.5f;
+	const float	maxFowardVectorDash = 2.0f;
+	const float	maxFowardVectorSlide = 2.5f;
+	float		cmdTime;
 	const float	btweenCmdTime = 0.4f;
-	float	consumeTime;
-	const float	consumeTimeInterval = 0.5f;
-	float	spitoutTime;
+	float		consumeTime;
+	const float	consumeTimeInterval = 0.3f;
+	float		spitoutTime;
 	const float	spitoutTimeInterval = 0.2f;
 
 	ObRect	inholeArea;

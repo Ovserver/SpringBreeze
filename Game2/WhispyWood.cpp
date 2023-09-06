@@ -7,7 +7,7 @@
 
 WhispyWood::WhispyWood()
 {
-	maxHp = 40;
+	maxHp = 60;
 	hp = maxHp;
 	isStasisType = true;
 	
@@ -63,15 +63,45 @@ void WhispyWood::Init()
 
 }
 
+int pt1count = 0;
+
 void WhispyWood::Update()
 {
-	if (MAINSTAGE->mImageFName == L"stage_1-boss.png" && MAINPLAYER->GetWorldPos().y < -650 * IMG_SCALE)
+	if (MAINSTAGE->mImageFName == L"stage_1-boss.png" && MAINSTAGE->mCamLock)
 		isActive = true;
 	if (isActive)
 	{
-
+		pattern1_Time += DELTA;
+		if (pattern1_cooldown > 0)
+			pattern1_cooldown -= DELTA;
+		if (pattern1_Time > pattern1_Time_Interval)
+		{
+			if (pt1count < 3 && pattern1_cooldown <= 0)
+			{
+				while (true)
+				{
+					int rand = RANDOM->Int(1, 7);
+					if (!MAINSTAGE->mEnemyList[rand]->isVisible)
+					{
+						MAINSTAGE->mEnemyList[rand]->Init();
+						MAINSTAGE->mEnemyList[rand]->isVisible = true;
+						pattern1_cooldown = pattern1_cooldown_Interval;
+						++pt1count;
+						break;
+					}
+				}
+			}
+			if (pt1count >= 3)
+			{
+				pattern1_Time = 0;
+				pt1count = 0;
+			}
+		}
 	}
-	cout << hp << endl;
+}
+
+void WhispyWood::LateUpdate()
+{
 }
 
 void WhispyWood::Render()
