@@ -10,6 +10,9 @@
     <ClInclude Include="Item.h" />
     <ClInclude Include="NeutralObj.h" />
     <ClInclude Include="WhispyWood.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="MecanimManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -20,5 +23,8 @@
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="NeutralObj.cpp" />
     <ClCompile Include="WhispyWood.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="MecanimManager.cpp" />
   </ItemGroup>
 </Project>

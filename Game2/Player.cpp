@@ -1,7 +1,10 @@
 #include "stdafx.h"
 #include "NeutralObj.h"
 #include "GameManager.h"
+#include "MecanimManager.h"
 #include "Player.h"
+#include "Stage.h"
+#include "UIManager.h"
 #include "Enemy.h"
 
 void Player::Init()
@@ -28,7 +31,7 @@ void Player::Init()
 	spitoutTime = 0;
 	invisibleTime = 0;
 	attackTime = 0;
-	slidePower = 3.5f;
+	slidePower = 1.75f * IMG_SCALE;
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
@@ -112,7 +115,7 @@ void Player::Init()
 	kirby_move_L.SetScale().y = kirby_move_L.imageSize.y * IMG_SCALE;
 	kirby_move_L.SetPivot() = OFFSET_B;
 	kirby_move_L.maxFrame.x = 6;
-	kirby_move_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 10);
+	kirby_move_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6);
 	kirby_move_L.isVisible = false;
 
 	kirby_move_R.LoadFile(L"kirby_move_R.png");
@@ -120,7 +123,7 @@ void Player::Init()
 	kirby_move_R.SetScale().y = kirby_move_R.imageSize.y * IMG_SCALE;
 	kirby_move_R.SetPivot() = OFFSET_B;
 	kirby_move_R.maxFrame.x = 6;
-	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 10);
+	kirby_move_R.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6);
 	kirby_move_R.isVisible = false;
 
 	kirby_dash_L.LoadFile(L"kirby_dash_test.png");
@@ -402,7 +405,7 @@ void Player::Update()
 	}
 	else if (attackTime > 0)
 	{
-		attackUpVector += DELTA * 7.0f;
+		attackUpVector += DELTA * 7.0f * IMG_SCALE;
 		if (LANDING_AREA)
 		{
 			while (LANDING_AREA)
@@ -412,8 +415,8 @@ void Player::Update()
 			}
 			attackUpVector *= -1;
 		}
-		MoveWorldPos(DOWN * DELTA * 100.0f * attackUpVector);
-		MoveWorldPos(RIGHT * DELTA * 100.0f * attackFowardVector);
+		MoveWorldPos(DOWN * DELTA * 50.0f * attackUpVector * IMG_SCALE);
+		MoveWorldPos(RIGHT * DELTA * 50.0f * attackFowardVector * IMG_SCALE);
 		attackTime -= DELTA;
 		jumpable = false;
 		isJump = false;
@@ -423,7 +426,7 @@ void Player::Update()
 	}
 	else
 	{
-		upVector += DELTA * 15.0f;
+		upVector += DELTA * (12.0f + 1.5f * IMG_SCALE);
 		if (LANDING_AREA && upVector > 0)
 		{
 			isJump = false;
@@ -439,10 +442,10 @@ void Player::Update()
 			upVector = 0;
 		}
 
-		if (upVector > 0.8f && isHovering) upVector = 0.8f;
-		else if (upVector > 3.5f) upVector = 3.5f;
+		if (upVector > 0.4f * IMG_SCALE && isHovering) upVector = 0.4f * IMG_SCALE;
+		else if (upVector > 1.75f * IMG_SCALE) upVector = 1.75f * IMG_SCALE;
 
-		MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+		MoveWorldPos(DOWN * DELTA * 50.0f * upVector * IMG_SCALE);
 
 		if (cmdTime > 0) cmdTime -= DELTA;	else { cmdTime = 0; MecanimManager::ComboClear(); }
 		if (consumeTime > 0) consumeTime -= DELTA;
@@ -465,14 +468,14 @@ void Player::Update()
 		}
 		if (!isMove && slideTime <= 0)
 		{
-			if (fowardVector > 0.05f)
-				fowardVector -= DELTA * 5;
-			else if (fowardVector < -0.05f)
-				fowardVector += DELTA * 5;
+			if (fowardVector > 0.03f)
+				fowardVector -= DELTA * 2.5f * IMG_SCALE;
+			else if (fowardVector < -0.03f)
+				fowardVector += DELTA * 2.5f * IMG_SCALE;
 			else
 				fowardVector = 0;
 		}
-		MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector);
+		MoveWorldPos(RIGHT * DELTA * 50.0f * fowardVector * IMG_SCALE);
 		// arrow up key
 		if (INPUT->KeyDown(VK_UP))
 		{
@@ -522,7 +525,7 @@ void Player::Update()
 			if (isDash) isDash = false;
 			MecanimManager::ComboInput(VK_LEFT);
 			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
-			{				
+			{
 				MecanimManager::ComboClear();
 				isDash = true;
 				SOUND->Stop("dash");
@@ -553,12 +556,12 @@ void Player::Update()
 				if (isDash)
 				{
 					if (fowardVector >= -maxFowardVectorDash)
-						fowardVector -= DELTA * 10;
+						fowardVector -= DELTA * 5 * IMG_SCALE;
 				}
 				else
 				{
 					if (fowardVector >= -maxFowardVector)
-						fowardVector -= DELTA * 10;
+						fowardVector -= DELTA * 5 * IMG_SCALE;
 				}
 				//MoveWorldPos(LEFT * DELTA * 150.0f * (isDash / 2.0f + 1));
 			}
@@ -577,12 +580,12 @@ void Player::Update()
 				if (isDash)
 				{
 					if (fowardVector <= maxFowardVectorDash)
-						fowardVector += DELTA * 10;
+						fowardVector += DELTA * 5 * IMG_SCALE;
 				}
 				else
 				{
 					if (fowardVector <= maxFowardVector)
-						fowardVector += DELTA * 10;
+						fowardVector += DELTA * 5 * IMG_SCALE;
 				}
 			}
 			else
@@ -630,7 +633,7 @@ void Player::Update()
 				MoveWorldPos(UP);
 				isJump = true;
 				jumpable = false;
-				upVector = -5.5f;
+				upVector = -(5.0f + 0.25f * IMG_SCALE);
 				kirby_jumpdown_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_jumpdown_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			}
@@ -638,7 +641,7 @@ void Player::Update()
 			{
 				SOUND->Stop("hover");
 				SOUND->Play("hover");
-				upVector = -2.8f;
+				upVector = -(1.4f + 0.7f * IMG_SCALE);
 				kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_hover_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 			}
@@ -679,7 +682,7 @@ void Player::Update()
 						{
 							starBulletStrList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
 							starBulletStrList[i]->isVisible = true;
-							starBulletStrList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 600.0f);
+							starBulletStrList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 300.0f * IMG_SCALE);
 							SOUND->Stop("spitout");
 							SOUND->Play("spitout");
 							break;
@@ -694,7 +697,7 @@ void Player::Update()
 						{
 							starBulletList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
 							starBulletList[i]->isVisible = true;
-							starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 500.0f);
+							starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 250.0f * IMG_SCALE);
 							SOUND->Stop("spitout");
 							SOUND->Play("spitout");
 							break;
@@ -794,6 +797,22 @@ void Player::Update()
 			UPDATE_COLOR;
 		}
 	}
+	//if (MAINSTAGE->mCamLock)
+	//{
+	//	cout << app.maincam
+	//	if (GetWorldPos().x < app.maincam->GetWorldPos().x - app.GetHalfWidth())
+	//		//SetWorldPosX(app.maincam->GetWorldPos().x - app.GetHalfWidth());
+	//		SetWorldPosX(-app.maincam->GetWorldPos().x);
+	//	if (GetWorldPos().x >app.maincam->GetWorldPos().x + app.GetHalfWidth())
+	//		//SetWorldPosX(app.maincam->GetWorldPos().x + app.GetHalfWidth());
+	//		SetWorldPosX(app.maincam->GetWorldPos().x);
+	//	if (GetWorldPos().y < app.maincam->GetWorldPos().y - app.GetHalfHeight())
+	//		//SetWorldPosY(app.maincam->GetWorldPos().y - app.GetHalfWidth());
+	//		SetWorldPosY(-app.maincam->GetWorldPos().y);
+	//	if (GetWorldPos().y > app.maincam->GetWorldPos().y + app.GetHalfHeight())
+	//		//SetWorldPosY(app.maincam->GetWorldPos().y - app.GetHalfWidth());
+	//		SetWorldPosY(app.maincam->GetWorldPos().y);
+	//}
 	UpdateSpritePos();
 	for (size_t i = 0; i < maxObjectNum; i++)
 	{
@@ -828,7 +847,7 @@ void Player::Render()
 	{
 		mSprites[i]->Render();
 	}
-	inholeArea.Render();
+	//inholeArea.Render();
 	for (size_t i = 0; i < maxObjectNum; i++)
 	{
 		starBulletList[i]->DrawCall();
@@ -847,11 +866,11 @@ void Player::Damage(int value)
 		SOUND->Stop("ouch");
 		SOUND->Play("ouch");
 		invisibleTimeInterval = 0.2f + value * 0.1f;
-		attackUpVector = -1.2f;
+		attackUpVector = -0.6f * IMG_SCALE;
 		if (!isRight)
-			attackFowardVector = 1.8f;
+			attackFowardVector = 0.9f * IMG_SCALE;
 		else
-			attackFowardVector = -1.8f;
+			attackFowardVector = -0.9f * IMG_SCALE;
 		if (copyState == PLAYER_COPY_STATE::NORMAL)
 		{
 			ANIM_GROUP_NORMAL* temp = (ANIM_GROUP_NORMAL*)currentAnimGroup;

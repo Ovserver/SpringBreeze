@@ -2,6 +2,8 @@
 #include "NeutralObj.h"
 #include "Enemy.h"
 #include "GameManager.h"
+#include "Stage.h"
+#include "MecanimManager.h"
 #include "Player.h"
 
 void Enemy::Init()
@@ -36,6 +38,118 @@ void Enemy::Init()
 		enemy_move.SetPivot() = OFFSET_B;
 		enemy_move.maxFrame.x = 2;
 		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 4);
+
+		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
+		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
+		enemy_ouch.SetPivot() = OFFSET_B;
+
+		SetScale().x = enemy_ouch.GetScale().x;
+		SetScale().y = enemy_ouch.GetScale().y;
+	}
+	if (serialName == ENEMY_SERIAL_NAME::WADDLE_DEE)
+	{
+		fowardVector = 0.4f;
+		isVisible = true;
+		isStasisType = false;
+		isMove = true;
+		enemy_Idle.LoadFile(L"waddleDee_idle.png");
+		enemy_move.LoadFile(L"waddleDee_idle.png");
+		enemy_ouch.LoadFile(L"waddleDee_ouch.png");
+
+		enemy_Idle.SetScale().x = enemy_Idle.imageSize.x / 2.0f * IMG_SCALE;
+		enemy_Idle.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_Idle.SetPivot() = OFFSET_B;
+		enemy_Idle.uv.z = 0.5f;
+
+		enemy_move.SetScale().x = enemy_Idle.imageSize.x / 2.0f * IMG_SCALE;
+		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_move.SetPivot() = OFFSET_B;
+		enemy_move.maxFrame.x = 2;
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 4);
+
+		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
+		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
+		enemy_ouch.SetPivot() = OFFSET_B;
+
+		SetScale().x = enemy_ouch.GetScale().x;
+		SetScale().y = enemy_ouch.GetScale().y;
+	}
+	if (serialName == ENEMY_SERIAL_NAME::BRONTO_BURT)
+	{
+		fowardVector = 0.4f;
+		isVisible = true;
+		isStasisType = false;
+		isMove = true;
+		enemy_Idle.LoadFile(L"brontoburt_idle.png");
+		enemy_move.LoadFile(L"brontoburt_idle.png");
+		enemy_ouch.LoadFile(L"brontoburt_ouch.png");
+
+		enemy_Idle.SetScale().x = enemy_Idle.imageSize.x / 4.0f * IMG_SCALE;
+		enemy_Idle.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_Idle.SetPivot() = OFFSET_B;
+		enemy_Idle.uv.z = 1.0f / 4;
+
+		enemy_move.SetScale().x = enemy_Idle.imageSize.x / 4.0f * IMG_SCALE;
+		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_move.SetPivot() = OFFSET_B;
+		enemy_move.maxFrame.x = 4;
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);
+
+		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
+		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
+		enemy_ouch.SetPivot() = OFFSET_B;
+
+		SetScale().x = enemy_ouch.GetScale().x;
+		SetScale().y = enemy_ouch.GetScale().y;
+	}
+	if (serialName == ENEMY_SERIAL_NAME::GRIZZO)
+	{
+		fowardVector = 0.4f;
+		isVisible = true;
+		isStasisType = false;
+		isMove = true;
+		enemy_Idle.LoadFile(L"grizzo_idle.png");
+		enemy_move.LoadFile(L"grizzo_idle.png");
+		enemy_ouch.LoadFile(L"grizzo_ouch.png");
+
+		enemy_Idle.SetScale().x = enemy_Idle.imageSize.x / 2.0f * IMG_SCALE;
+		enemy_Idle.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_Idle.SetPivot() = OFFSET_B;
+		enemy_Idle.uv.z = 1.0f / 2;
+
+		enemy_move.SetScale().x = enemy_Idle.imageSize.x / 2.0f * IMG_SCALE;
+		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_move.SetPivot() = OFFSET_B;
+		enemy_move.maxFrame.x = 2;
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);
+
+		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
+		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
+		enemy_ouch.SetPivot() = OFFSET_B;
+
+		SetScale().x = enemy_ouch.GetScale().x;
+		SetScale().y = enemy_ouch.GetScale().y;
+	}
+	if (serialName == ENEMY_SERIAL_NAME::TWIZZY)
+	{
+		fowardVector = 0.4f;
+		isVisible = true;
+		isStasisType = false;
+		isMove = true;
+		enemy_Idle.LoadFile(L"twizzy_idle.png");
+		enemy_move.LoadFile(L"twizzy_idle.png");
+		enemy_ouch.LoadFile(L"twizzy_ouch.png");
+
+		enemy_Idle.SetScale().x = enemy_Idle.imageSize.x / 3.0f * IMG_SCALE;
+		enemy_Idle.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_Idle.SetPivot() = OFFSET_B;
+		enemy_Idle.uv.z = 1.0f/3;
+
+		enemy_move.SetScale().x = enemy_Idle.imageSize.x / 3.0f * IMG_SCALE;
+		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+		enemy_move.SetPivot() = OFFSET_B;
+		enemy_move.maxFrame.x = 3;
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);
 
 		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
 		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
@@ -136,7 +250,7 @@ void Enemy::Update()
 				}
 			}
 		}
-		else if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
+		else if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO || serialName == ENEMY_SERIAL_NAME::WADDLE_DEE)
 		{
 			upVector += DELTA * 15.0f;
 
@@ -167,6 +281,38 @@ void Enemy::Update()
 				}
 			}
 		}
+		else
+		{
+			upVector += DELTA * 15.0f;
+
+			if (LANDING_AREA && upVector > 0)
+			{
+				upVector = 0;
+				if (invisibleTime <= 0)
+					isDamage = false;
+			}
+			if (upVector > 3.5f) upVector = 3.5f;
+
+			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+			MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector * (isRight ? 1 : -1));
+			if (INTERPOL_AREA_PULL_LEFT)
+			{
+				isRight = false;
+				while (INTERPOL_AREA_PULL_LEFT) {
+					MoveWorldPos(LEFT);
+					UPDATE_COLOR;
+				}
+			}
+			else if (INTERPOL_AREA_PULL_RIGHT)
+			{
+				isRight = true;
+				while (INTERPOL_AREA_PULL_RIGHT) {
+					MoveWorldPos(RIGHT);
+					UPDATE_COLOR;
+				}
+			}
+		}
+
 	}
 	UPDATE_COLOR;
 }
@@ -207,7 +353,8 @@ void Enemy::Render()
 	UpdateSpritePos();
 	if (isVisible)
 	{
-		if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
+		//if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
+		if (serialName != ENEMY_SERIAL_NAME::WHISPY_APPLE)
 		{
 			if (isDamage || isInhole)
 			{

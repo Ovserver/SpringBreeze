@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameManager.h"
+#include "Stage.h"
 #include "NeutralObj.h"
-#include "Player.h"
 #include "Enemy.h"
 #include "WhispyWood.h"
 

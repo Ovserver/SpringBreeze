@@ -154,9 +154,9 @@ private:
 		{
 			if (!breathList[i]->isVisible)
 			{
-				breathList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10) + (isRight ? RIGHT : LEFT) * 20);
+				breathList[i]->SetWorldPos(GetWorldPos() + UP * 5 * IMG_SCALE + (isRight ? RIGHT : LEFT) * 10 * IMG_SCALE);
 				breathList[i]->isVisible = true;
-				breathList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 150.0f);
+				breathList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 75.0f * IMG_SCALE);
 				breathList[i]->lifeTime = 0.4f;
 				return;
 			}
