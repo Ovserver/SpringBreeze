@@ -15,6 +15,7 @@ public:
 	void Init();
 	void Update();
 	void LateUpdate() override;
+	void Damage(int value) override;
 	void Render();
 	void UpdateSpritePos() override;
 private:

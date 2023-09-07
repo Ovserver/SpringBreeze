@@ -1,5 +1,5 @@
 #pragma once
-
+#define	PLAYER_MAX_HP 100
 class Enemy;
 
 enum class PLAYER_COPY_STATE
@@ -38,28 +38,34 @@ enum class ANIM_GROUP_NORMAL
 	CONSUME,
 	SPITOUT,
 	COPY,
-	OVER
+	PORTAL,
+	OVER,
 };
 
 class Player : public ObImage
 {
 public:
+	bool				isPortaling;
 	bool				testAnimFSM;
 	int					hp;
 	void*				currentAnimGroup;
-	const int			maxStarBullet = 3;
+	float		slideTime;
+	const int			maxObjectNum = 5;
 	Color				pointColor;
 	PLAYER_COPY_STATE	copyState;
 	ANIM_GROUP_NORMAL	STATE;
 	vector<Enemy*>		inholeEnemyList;
 	vector<NeutralObj*>	starBulletList;
 	vector<NeutralObj*>	starBulletStrList;
+	vector<NeutralObj*>	breathList;
 public:
 	void Init();
+	void InitAnimState();
 	void Release();
 	void Update();
 	void LateUpdate();
 	void Render();
+	void Damage(int value);
 	void UpdateSpritePos();
 	void UpdatePointColor(Stage* stage);
 	void SetAnimGroup(PLAYER_COPY_STATE copyState);
@@ -76,11 +82,12 @@ private:
 	bool		jumpable;
 	bool		lockInLeft;
 	bool		lockInRight;
-	float		slideTime;
 	const float	slideTimeInterval = 0.6f;
 	float		slidePower;
 	float		upVector;
 	float		fowardVector;
+	float		attackUpVector;
+	float		attackFowardVector;
 	const float	maxFowardVector = 1.5f;
 	const float	maxFowardVectorDash = 2.0f;
 	const float	maxFowardVectorSlide = 2.5f;
@@ -89,8 +96,11 @@ private:
 	float		consumeTime;
 	const float	consumeTimeInterval = 0.3f;
 	float		spitoutTime;
-	const float	spitoutTimeInterval = 0.2f;
-
+	const float	spitoutTimeInterval = 0.15f;
+	float		invisibleTime;
+	float		invisibleTimeInterval = 0.7f;
+	float		attackTime;
+	float		attackTimeInterval = 0.5f;
 	ObRect	inholeArea;
 	vector<ObImage*> mSprites;
 	ObImage kirby_idle_L;
@@ -121,11 +131,15 @@ private:
 	ObImage kirby_inholeIt_dash_R;
 	ObImage kirby_inholeIt_jump_L;
 	ObImage kirby_inholeIt_jump_R;
+	ObImage kirby_inholeIt_ouch_L;
+	ObImage kirby_inholeIt_ouch_R;
 	ObImage kirby_spitout_L;
 	ObImage kirby_spitout_R;
 	ObImage kirby_consume;
 	ObImage kirby_ouch_L;
 	ObImage kirby_ouch_R;
+	ObImage kirby_portal_L;
+	ObImage kirby_portal_R;
 
 	ComboMap Dash_L;
 	ComboMap Dash_R;
@@ -134,5 +148,19 @@ private:
 	void ChangeSprite(ObImage* sprite);
 	void UpdateAnim();
 	void UpdateAnimFSM();
+	void ShootBreath()
+	{
+		for (size_t i = 0; i < breathList.size(); i++)
+		{
+			if (!breathList[i]->isVisible)
+			{
+				breathList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10) + (isRight ? RIGHT : LEFT) * 20);
+				breathList[i]->isVisible = true;
+				breathList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 150.0f);
+				breathList[i]->lifeTime = 0.4f;
+				return;
+			}
+		}
+	}
 };
 

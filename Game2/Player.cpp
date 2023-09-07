@@ -6,6 +6,7 @@
 
 void Player::Init()
 {
+	isPortaling = false;
 	testAnimFSM = true;
 	currentAnimGroup = nullptr;
 	copyState = PLAYER_COPY_STATE::NORMAL;
@@ -25,17 +26,19 @@ void Player::Init()
 	slideTime = 0;
 	consumeTime = 0;
 	spitoutTime = 0;
+	invisibleTime = 0;
+	attackTime = 0;
 	slidePower = 3.5f;
 	upVector = 0;
 	fowardVector = 0;
 	cmdTime = 0;
 	STATE = ANIM_GROUP_NORMAL::IDLE;
-	hp = 100;
+	hp = PLAYER_MAX_HP;
 
 	collider = COLLIDER::RECT;
 	SetPivot() = OFFSET_B;
-	SetScale().x = 50 * IMG_SCALE;
-	SetScale().y = 50 * IMG_SCALE;
+	SetScale().x = 24 * IMG_SCALE;
+	SetScale().y = 24 * IMG_SCALE;
 
 	mSprites.push_back(&kirby_idle_L);
 	mSprites.push_back(&kirby_idle_R);
@@ -59,6 +62,8 @@ void Player::Init()
 	mSprites.push_back(&kirby_inholeIt_dash_R);
 	mSprites.push_back(&kirby_inholeIt_jump_L);
 	mSprites.push_back(&kirby_inholeIt_jump_R);
+	mSprites.push_back(&kirby_inholeIt_ouch_L);
+	mSprites.push_back(&kirby_inholeIt_ouch_R);
 	mSprites.push_back(&kirby_spitout_L);
 	mSprites.push_back(&kirby_spitout_R);
 	mSprites.push_back(&kirby_consume);
@@ -70,11 +75,14 @@ void Player::Init()
 	mSprites.push_back(&kirby_falldown_R);
 	mSprites.push_back(&kirby_ouch_L);
 	mSprites.push_back(&kirby_ouch_R);
+	mSprites.push_back(&kirby_portal_L);
+	mSprites.push_back(&kirby_portal_R);
 
-	for (size_t i = 0; i < maxStarBullet; i++)
+	for (size_t i = 0; i < maxObjectNum; i++)
 	{
 		starBulletList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::STAR_BULLET));
 		starBulletStrList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::STAR_BULLET_STRENGTH));
+		breathList.push_back(new NeutralObj(OBJECT_SERIAL_NAME::KIRBY_BREATH));
 	}
 
 	inholeArea.SetScale().x = 50 * IMG_SCALE;
@@ -117,7 +125,7 @@ void Player::Init()
 
 	kirby_dash_L.LoadFile(L"kirby_dash_test.png");
 	kirby_dash_L.SetScale().x = kirby_dash_L.imageSize.x / 8.0f * IMG_SCALE * -1;
-	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y  * IMG_SCALE;
+	kirby_dash_L.SetScale().y = kirby_dash_L.imageSize.y * IMG_SCALE;
 	kirby_dash_L.SetPivot() = OFFSET_B;
 	kirby_dash_L.maxFrame.x = 8;
 	kirby_dash_L.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 18);
@@ -287,6 +295,18 @@ void Player::Init()
 	kirby_inholeIt_jump_R.SetPivot() = OFFSET_B;
 	kirby_inholeIt_jump_R.isVisible = false;
 
+	kirby_inholeIt_ouch_L.LoadFile(L"kirby_inholeit_ouch.png");
+	kirby_inholeIt_ouch_L.SetScale().x = kirby_inholeIt_ouch_L.imageSize.x * IMG_SCALE * -1;
+	kirby_inholeIt_ouch_L.SetScale().y = kirby_inholeIt_ouch_L.imageSize.y * IMG_SCALE;
+	kirby_inholeIt_ouch_L.SetPivot() = OFFSET_B;
+	kirby_inholeIt_ouch_L.isVisible = false;
+
+	kirby_inholeIt_ouch_R.LoadFile(L"kirby_inholeit_ouch.png");
+	kirby_inholeIt_ouch_R.SetScale().x = kirby_inholeIt_ouch_R.imageSize.x * IMG_SCALE;
+	kirby_inholeIt_ouch_R.SetScale().y = kirby_inholeIt_ouch_R.imageSize.y * IMG_SCALE;
+	kirby_inholeIt_ouch_R.SetPivot() = OFFSET_B;
+	kirby_inholeIt_ouch_R.isVisible = false;
+
 	kirby_spitout_L.LoadFile(L"kirby_spitout.png");
 	kirby_spitout_L.SetScale().x = kirby_spitout_L.imageSize.x / 2.0f * IMG_SCALE * -1;
 	kirby_spitout_L.SetScale().y = kirby_spitout_L.imageSize.y * IMG_SCALE;
@@ -308,13 +328,33 @@ void Player::Init()
 	kirby_consume.maxFrame.y = 3;
 	kirby_consume.isVisible = false;
 
-	kirby_ouch_L.LoadFile(L"riderkirby_attack.png");
-	kirby_ouch_L.SetScale().x = kirby_ouch_L.imageSize.x / 4.0f * IMG_SCALE;
+	kirby_ouch_L.LoadFile(L"kirby_ouch.png");
+	kirby_ouch_L.SetScale().x = kirby_ouch_L.imageSize.x * IMG_SCALE * -1;
 	kirby_ouch_L.SetScale().y = kirby_ouch_L.imageSize.y * IMG_SCALE;
 	kirby_ouch_L.SetPivot() = OFFSET_B;
-	kirby_ouch_L.maxFrame.x = 4;
-	kirby_ouch_L.ChangeAnim(ANIMSTATE::LOOP, 1 / 24.0f);
 	kirby_ouch_L.isVisible = false;
+
+	kirby_ouch_R.LoadFile(L"kirby_ouch.png");
+	kirby_ouch_R.SetScale().x = kirby_ouch_R.imageSize.x * IMG_SCALE;
+	kirby_ouch_R.SetScale().y = kirby_ouch_R.imageSize.y * IMG_SCALE;
+	kirby_ouch_R.SetPivot() = OFFSET_B;
+	kirby_ouch_R.isVisible = false;
+
+	kirby_portal_L.LoadFile(L"kirby_portal.png");
+	kirby_portal_L.SetScale().x = kirby_portal_L.imageSize.x / 5.0f * IMG_SCALE * -1;
+	kirby_portal_L.SetScale().y = kirby_portal_L.imageSize.y * IMG_SCALE;
+	kirby_portal_L.SetPivot() = OFFSET_B;
+	kirby_portal_L.maxFrame.x = 5;
+	kirby_portal_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+	kirby_portal_L.isVisible = false;
+
+	kirby_portal_R.LoadFile(L"kirby_portal.png");
+	kirby_portal_R.SetScale().x = kirby_portal_R.imageSize.x / 5.0f * IMG_SCALE;
+	kirby_portal_R.SetScale().y = kirby_portal_R.imageSize.y * IMG_SCALE;
+	kirby_portal_R.SetPivot() = OFFSET_B;
+	kirby_portal_R.maxFrame.x = 5;
+	kirby_portal_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+	kirby_portal_R.isVisible = false;
 
 	Dash_L.comboMaps[0] = VK_LEFT;
 	Dash_L.comboMaps[1] = VK_LEFT;
@@ -327,6 +367,17 @@ void Player::Init()
 	Slide.comboMaps[0] = 'A';
 	Slide.comboMaps[1] = VK_DOWN;
 	Slide.comboLength = 2;
+}
+
+void Player::InitAnimState()
+{
+	isPortaling = false;
+	fowardVector = 0;
+	if (copyState == PLAYER_COPY_STATE::NORMAL)
+	{
+		ANIM_GROUP_NORMAL* temp = (ANIM_GROUP_NORMAL*)currentAnimGroup;
+		*temp = ANIM_GROUP_NORMAL::IDLE;
+	}
 }
 
 void Player::Release()
@@ -345,41 +396,58 @@ void Player::Release()
 
 void Player::Update()
 {
-	//debug set
-	if (GameManager::DebugMode)
+	if (isPortaling)
 	{
-		if (INPUT->KeyPress(VK_UP))
-			MoveWorldPos(UP * DELTA * 300.0f);
-		if (INPUT->KeyPress(VK_DOWN))
-			MoveWorldPos(DOWN * DELTA * 300.0f);
-		if (INPUT->KeyPress(VK_LEFT))
-			MoveWorldPos(LEFT * DELTA * 300.0f);
-		if (INPUT->KeyPress(VK_RIGHT))
-			MoveWorldPos(RIGHT * DELTA * 300.0f);
+
+	}
+	else if (attackTime > 0)
+	{
+		attackUpVector += DELTA * 7.0f;
+		if (LANDING_AREA)
+		{
+			while (LANDING_AREA)
+			{
+				MoveWorldPos(UP);
+				UPDATE_COLOR;
+			}
+			attackUpVector *= -1;
+		}
+		MoveWorldPos(DOWN * DELTA * 100.0f * attackUpVector);
+		MoveWorldPos(RIGHT * DELTA * 100.0f * attackFowardVector);
+		attackTime -= DELTA;
+		jumpable = false;
+		isJump = false;
+		isHovering = false;
+		upVector = 0;
+		fowardVector = 0;
 	}
 	else
 	{
 		upVector += DELTA * 15.0f;
-
 		if (LANDING_AREA && upVector > 0)
 		{
 			isJump = false;
 			jumpable = true;
-			isHovering = false;
+			if (isHovering)
+			{
+				isHovering = false;
+				SOUND->Stop("hoverend");
+				SOUND->Play("hoverend");
+				ShootBreath();
+				spitoutTime = spitoutTimeInterval;
+			}
 			upVector = 0;
 		}
 
-		if (upVector > 0.5f && isHovering) upVector = 0.5f;
+		if (upVector > 0.8f && isHovering) upVector = 0.8f;
 		else if (upVector > 3.5f) upVector = 3.5f;
 
-		//if (AIR_AREA || INTERPOL_AREA_DESC_SLOPE || WALL_AREA_LEFT || WALL_AREA_RIGHT)
-		{
-			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
-		}
-		cout << fowardVector << endl;
+		MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+
 		if (cmdTime > 0) cmdTime -= DELTA;	else { cmdTime = 0; MecanimManager::ComboClear(); }
 		if (consumeTime > 0) consumeTime -= DELTA;
 		if (spitoutTime > 0) spitoutTime -= DELTA;
+		if (invisibleTime > 0) invisibleTime -= DELTA;
 		if (slideTime > 0) { slideTime -= DELTA; }
 		else if (slideTime < 0) { slideTime = 0; fowardVector = 0; }
 		if (AIR_AREA) slideTime = 0;
@@ -408,7 +476,18 @@ void Player::Update()
 		// arrow up key
 		if (INPUT->KeyDown(VK_UP))
 		{
-			if (MAINSTAGE->PortalCollisionCheck(this)) return;
+			if (MAINSTAGE->PortalCollisionCheck(this))
+			{
+				isPortaling = true;
+				kirby_portal_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+				kirby_portal_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+				if (copyState == PLAYER_COPY_STATE::NORMAL)
+				{
+					ANIM_GROUP_NORMAL* temp = (ANIM_GROUP_NORMAL*)currentAnimGroup;
+					*temp = ANIM_GROUP_NORMAL::PORTAL;
+				}
+				return;
+			}
 			MecanimManager::ComboInput(VK_UP); cmdTime = btweenCmdTime;
 		}
 
@@ -418,6 +497,8 @@ void Player::Update()
 			cmdTime = btweenCmdTime;
 			if (isInholeIt)
 			{
+				SOUND->Stop("swallow");
+				SOUND->Play("swallow");
 				isInholeIt = false;
 				for (size_t i = 0; i < inholeEnemyList.size(); i++)
 				{
@@ -441,10 +522,11 @@ void Player::Update()
 			if (isDash) isDash = false;
 			MecanimManager::ComboInput(VK_LEFT);
 			if (!isJump && btweenCmdTime > 0 && MecanimManager::ComboMatch(&Dash_L))
-			{
+			{				
 				MecanimManager::ComboClear();
 				isDash = true;
-				cmdTime = 0;
+				SOUND->Stop("dash");
+				SOUND->Play("dash");
 			}
 			cmdTime = btweenCmdTime;
 		}
@@ -457,7 +539,8 @@ void Player::Update()
 			{
 				MecanimManager::ComboClear();
 				isDash = true;
-				cmdTime = 0;
+				SOUND->Stop("dash");
+				SOUND->Play("dash");
 			}
 			cmdTime = btweenCmdTime;
 		}
@@ -513,7 +596,7 @@ void Player::Update()
 			isDash = false;
 			isMove = false;
 		}
-		
+
 		// A key
 		if (INPUT->KeyDown('A'))
 		{
@@ -524,6 +607,8 @@ void Player::Update()
 				slideTime <= 0 &&
 				MecanimManager::ComboMatch(&Slide))
 			{
+				SOUND->Stop("slide");
+				SOUND->Play("slide");
 				MecanimManager::ComboClear();
 				slideTime = slideTimeInterval;
 				cmdTime = 0;
@@ -535,8 +620,12 @@ void Player::Update()
 				isHovering = true;
 				jumpable = false;
 				isDash = false;
+				SOUND->Stop("hover");
+				SOUND->Play("hover");
 			}
 			else if (jumpable && slideTime <= 0) {
+				SOUND->Stop("jump");
+				SOUND->Play("jump");
 				MoveWorldPos(UP);
 				MoveWorldPos(UP);
 				isJump = true;
@@ -547,6 +636,8 @@ void Player::Update()
 			}
 			if (isHovering)
 			{
+				SOUND->Stop("hover");
+				SOUND->Play("hover");
 				upVector = -2.8f;
 				kirby_hover_L.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
 				kirby_hover_R.ChangeAnim(ANIMSTATE::ONCE, 1.0f / 12);
@@ -569,6 +660,8 @@ void Player::Update()
 				consumeTime <= 0)
 			{
 				isInhole = true;
+				SOUND->Stop("inhole");
+				SOUND->Play("inhole");
 			}
 			else if (isInholeIt)
 			{
@@ -580,26 +673,30 @@ void Player::Update()
 				}
 				if (inholeEnemyList.size() >= 2)
 				{
-					for (size_t i = 0; i < maxStarBullet; i++)
+					for (size_t i = 0; i < maxObjectNum; i++)
 					{
 						if (!starBulletStrList[i]->isVisible)
 						{
 							starBulletStrList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
 							starBulletStrList[i]->isVisible = true;
 							starBulletStrList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 600.0f);
+							SOUND->Stop("spitout");
+							SOUND->Play("spitout");
 							break;
 						}
 					}
 				}
 				else
 				{
-					for (size_t i = 0; i < maxStarBullet; i++)
+					for (size_t i = 0; i < maxObjectNum; i++)
 					{
 						if (!starBulletList[i]->isVisible)
 						{
 							starBulletList[i]->SetWorldPos(GetWorldPos() + Vector2(0, 10));
 							starBulletList[i]->isVisible = true;
 							starBulletList[i]->SetDirSpeed(isRight ? RIGHT : LEFT, 500.0f);
+							SOUND->Stop("spitout");
+							SOUND->Play("spitout");
 							break;
 						}
 					}
@@ -609,6 +706,9 @@ void Player::Update()
 			}
 			else if (isHovering)
 			{
+				SOUND->Stop("hoverend");
+				SOUND->Play("hoverend");
+				ShootBreath();
 				spitoutTime = spitoutTimeInterval;
 				isHovering = false;
 			}
@@ -622,7 +722,10 @@ void Player::Update()
 			if (isInhole)
 			{
 				if (!MAINSTAGE->EnemyInholingCheck()) // 빨아들이는 중인 적이 없을 때
+				{
 					isInhole = false;
+					SOUND->Stop("inhole");
+				}
 			}
 		}
 		if (isInhole)
@@ -636,68 +739,78 @@ void Player::Update()
 					{
 						isInhole = false;
 						isInholeIt = true;
+						SOUND->Stop("inhole");
+						SOUND->Stop("inholeit");
+						SOUND->Play("inholeit");
 						break;
 					}
 				}
 			}
 		}
-		if (INTERPOL_AREA_RISE)
+	}
+	MAINSTAGE->EnemyCollisionCheck(this, COLLISION_CHECK_TYPE::COLLISION_OBJECT);
+
+	if (INTERPOL_AREA_RISE)
+	{
+		while (INTERPOL_AREA_RISE)
 		{
-			while (INTERPOL_AREA_RISE)
-			{
-				MoveWorldPos(UP);
-				UPDATE_COLOR;
-			}
+			MoveWorldPos(UP);
+			UPDATE_COLOR;
 		}
-		if (INTERPOL_AREA_DESC_SLOPE && !isJump)
+	}
+	if (INTERPOL_AREA_DESC_SLOPE && !isJump)
+	{
+		while (INTERPOL_AREA_DESC_SLOPE)
 		{
-			while (INTERPOL_AREA_DESC_SLOPE)
-			{
-				MoveWorldPos(DOWN);
-				UPDATE_COLOR;
-			}
+			MoveWorldPos(DOWN);
+			UPDATE_COLOR;
 		}
-		if (INTERPOL_AREA_DESC)
+	}
+	if (INTERPOL_AREA_DESC)
+	{
+		while (INTERPOL_AREA_DESC)
 		{
-			while (INTERPOL_AREA_DESC)
-			{
-				MoveWorldPos(DOWN);
-				UPDATE_COLOR;
-			}
+			MoveWorldPos(DOWN);
+			UPDATE_COLOR;
 		}
-		if (INTERPOL_AREA_PULL_LEFT)
+	}
+	if (INTERPOL_AREA_PULL_LEFT)
+	{
+		lockInRight = true;
+		fowardVector = 0;
+		while (INTERPOL_AREA_PULL_LEFT)
 		{
-			lockInRight = true;
-			fowardVector = 0;
-			while (INTERPOL_AREA_PULL_LEFT)
-			{
-				MoveWorldPos(LEFT);
-				UPDATE_COLOR;
-			}
+			MoveWorldPos(LEFT);
+			UPDATE_COLOR;
 		}
-		if (INTERPOL_AREA_PULL_RIGHT)
+	}
+	if (INTERPOL_AREA_PULL_RIGHT)
+	{
+		lockInLeft = true;
+		fowardVector = 0;
+		while (INTERPOL_AREA_PULL_RIGHT)
 		{
-			lockInLeft = true;
-			fowardVector = 0;
-			while (INTERPOL_AREA_PULL_RIGHT)
-			{
-				MoveWorldPos(RIGHT);
-				UPDATE_COLOR;
-			}
+			MoveWorldPos(RIGHT);
+			UPDATE_COLOR;
 		}
-		UpdateSpritePos();
-		for (size_t i = 0; i < maxStarBullet; i++)
+	}
+	UpdateSpritePos();
+	for (size_t i = 0; i < maxObjectNum; i++)
+	{
+		if (starBulletStrList[i]->isVisible)
 		{
-			if (starBulletStrList[i]->isVisible)
-			{
-				starBulletStrList[i]->Update();
-				MAINSTAGE->EnemyCollisionCheck(starBulletStrList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ASSAULT, 20);
-			}
-			if (starBulletList[i]->isVisible)
-			{
-				starBulletList[i]->Update();
-				MAINSTAGE->EnemyCollisionCheck(starBulletList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE, 10);
-			}
+			starBulletStrList[i]->Update();
+			MAINSTAGE->EnemyCollisionCheck(starBulletStrList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ASSAULT, 20);
+		}
+		if (starBulletList[i]->isVisible)
+		{
+			starBulletList[i]->Update();
+			MAINSTAGE->EnemyCollisionCheck(starBulletList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE, 10);
+		}
+		if (breathList[i]->isVisible)
+		{
+			breathList[i]->Update();
+			MAINSTAGE->EnemyCollisionCheck(breathList[i], COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE, 5, false);
 		}
 	}
 }
@@ -716,10 +829,37 @@ void Player::Render()
 		mSprites[i]->Render();
 	}
 	inholeArea.Render();
-	for (size_t i = 0; i < maxStarBullet; i++)
+	for (size_t i = 0; i < maxObjectNum; i++)
 	{
 		starBulletList[i]->DrawCall();
 		starBulletStrList[i]->DrawCall();
+		breathList[i]->DrawCall();
+	}
+}
+
+void Player::Damage(int value)
+{
+	if (invisibleTime <= 0)
+	{
+		hp -= value;
+		invisibleTime = invisibleTimeInterval;
+		attackTime = attackTimeInterval;
+		SOUND->Stop("ouch");
+		SOUND->Play("ouch");
+		invisibleTimeInterval = 0.2f + value * 0.1f;
+		attackUpVector = -1.2f;
+		if (!isRight)
+			attackFowardVector = 1.8f;
+		else
+			attackFowardVector = -1.8f;
+		if (copyState == PLAYER_COPY_STATE::NORMAL)
+		{
+			ANIM_GROUP_NORMAL* temp = (ANIM_GROUP_NORMAL*)currentAnimGroup;
+			if (isInholeIt)
+				*temp = ANIM_GROUP_NORMAL::INHOLEIT_OUCH;
+			else
+				*temp = ANIM_GROUP_NORMAL::OUCH;
+		}
 	}
 }
 
@@ -779,7 +919,7 @@ void Player::SetAnimGroup(PLAYER_COPY_STATE copyState)
 
 void Player::ChangeSprite(ObImage* sprite)
 {
-	for (size_t i = 0; i < mSprites.size() - 1; i++)
+	for (size_t i = 0; i < mSprites.size(); i++)
 	{
 		if (mSprites[i] == sprite)
 			mSprites[i]->isVisible = true;
@@ -851,6 +991,10 @@ void Player::UpdateAnim()
 			if (isRight) ChangeSprite(&kirby_inholeIt_jump_R);
 			else ChangeSprite(&kirby_inholeIt_jump_L);
 			break;
+		case ANIM_GROUP_NORMAL::INHOLEIT_OUCH:
+			if (isRight) ChangeSprite(&kirby_inholeIt_ouch_R);
+			else ChangeSprite(&kirby_inholeIt_ouch_L);
+			break;
 		case ANIM_GROUP_NORMAL::CONSUME:
 			ChangeSprite(&kirby_consume);
 			break;
@@ -859,6 +1003,12 @@ void Player::UpdateAnim()
 			else ChangeSprite(&kirby_spitout_L);
 			break;
 		case ANIM_GROUP_NORMAL::OUCH:
+			if (isRight) ChangeSprite(&kirby_ouch_R);
+			else ChangeSprite(&kirby_ouch_L);
+			break;
+		case ANIM_GROUP_NORMAL::PORTAL:
+			if (isRight) ChangeSprite(&kirby_portal_R);
+			else ChangeSprite(&kirby_portal_L);
 			break;
 		case ANIM_GROUP_NORMAL::OVER:
 			break;
@@ -937,6 +1087,7 @@ void Player::UpdateAnimFSM()
 			else if (!AIR_AREA) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
 			break;
 		case ANIM_GROUP_NORMAL::OUCH:
+			if (attackTime <= 0) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;
 			break;
 		case ANIM_GROUP_NORMAL::HOVER:
 			if (!isHovering)
@@ -993,6 +1144,7 @@ void Player::UpdateAnimFSM()
 			else if (!isJump) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
 			break;
 		case ANIM_GROUP_NORMAL::INHOLEIT_OUCH:
+			if (attackTime <= 0) *tmpSTATE = ANIM_GROUP_NORMAL::INHOLEIT;
 			break;
 		case ANIM_GROUP_NORMAL::CONSUME:
 			if (consumeTime <= 0) *tmpSTATE = ANIM_GROUP_NORMAL::IDLE;

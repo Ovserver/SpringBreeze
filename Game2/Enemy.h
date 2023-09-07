@@ -23,6 +23,9 @@ public:
 	bool				isRight;
 	bool				isMove;
 	bool				isStasisType;
+	float				invisibleTime;
+	float				invisibleTimeInterval;
+	float				deathAnimTime;
 	Color				pointColor;
 	Vector2				initPos;
 public:
@@ -42,13 +45,15 @@ public:
 	virtual void Update();
 	virtual void LateUpdate();
 	virtual void Render();
-	void Damage(int value);
+	virtual void Damage(int value);
 	virtual void UpdateSpritePos();
 	ENEMY_SERIAL_NAME GetSerialName() const { return serialName; }
 protected:
 	float				accel;
 	float				upVector;
 	float				fowardVector;
+	float				attackUpVector;
+	float				attackFowardVector;
 	ObImage				enemy_Idle;
 	ObImage				enemy_attack;
 	ObImage				enemy_move;

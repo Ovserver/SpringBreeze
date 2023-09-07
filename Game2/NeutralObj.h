@@ -12,6 +12,7 @@ enum class OBJECT_SERIAL_NAME
 class NeutralObj : public ObImage
 {
 public:
+	float				lifeTime;
 	Color				pointColor;
 	vector<GameObject*>	interactObjList;
 public:
@@ -19,7 +20,7 @@ public:
 	NeutralObj(OBJECT_SERIAL_NAME _serialName);
 	void Update();
 	void DrawCall();
-	void SetDirSpeed(Vector2 _dir, float _speed) { dir = _dir; speed = _speed; }
+	void SetDirSpeed(Vector2 _dir, float _speed);
 	OBJECT_SERIAL_NAME GetSerialName() const { return serialName; }
 private:
 	float				speed;

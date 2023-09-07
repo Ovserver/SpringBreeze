@@ -37,6 +37,15 @@ NeutralObj::NeutralObj(OBJECT_SERIAL_NAME _serialName)
 		subImage[0]->isVisible = true;
 		subImage[0]->SetPivot() = OFFSET_B;
 	}
+	if (_serialName == OBJECT_SERIAL_NAME::KIRBY_BREATH)
+	{
+		LoadFile(L"kirby_breath.png");
+		SetScale().x = imageSize.x * IMG_SCALE;
+		SetScale().y = imageSize.y * IMG_SCALE;
+		isVisible = false;
+		collider = COLLIDER::CIRCLE;
+		SetPivot() = OFFSET_B;
+	}
 }
 
 void NeutralObj::Update()
@@ -51,6 +60,9 @@ void NeutralObj::Update()
 	{
 		if (WALL_AREA_LEFT || WALL_AREA_RIGHT)
 		{
+			SOUND->Stop("starbulletend");
+			SOUND->Play("starbulletend");
+			GameManager::ActiveEffect(this, UP * 4 * IMG_SCALE);
 			isVisible = false;
 			interactObjList.clear();
 		}
@@ -61,6 +73,17 @@ void NeutralObj::Update()
 			GetWorldPos().x < app.maincam->GetWorldPos().x + app.GetHalfWidth() * 1.15f &&
 			GetWorldPos().y > app.maincam->GetWorldPos().y - app.GetHalfHeight() * 1.15f &&
 			GetWorldPos().y < app.maincam->GetWorldPos().y + app.GetHalfHeight() * 1.15f))
+		{
+			GameManager::ActiveEffect(this);
+			isVisible = false;
+			interactObjList.clear();
+		}
+	}
+	if (serialName == OBJECT_SERIAL_NAME::KIRBY_BREATH)
+	{
+		if(lifeTime > 0)
+			lifeTime -= DELTA;
+		if (WALL_AREA_LEFT || WALL_AREA_RIGHT || INTERPOL_AREA_PULL_LEFT|| INTERPOL_AREA_PULL_RIGHT || lifeTime <= 0)
 		{
 			isVisible = false;
 			interactObjList.clear();
@@ -78,5 +101,21 @@ void NeutralObj::DrawCall()
 		}
 	}
 	Render();
+}
+
+void NeutralObj::SetDirSpeed(Vector2 _dir, float _speed)
+{
+	 dir = _dir; speed = _speed; 
+	 if (dir.x > 0)
+	 {
+		 if (GetScale().x < 0)
+		 SetScale().x = GetScale().x * -1;
+	 }
+	 else
+	 {
+		 if (GetScale().x > 0)
+		 SetScale().x = GetScale().x * -1;
+	 }
+	
 }
 

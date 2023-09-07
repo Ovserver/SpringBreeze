@@ -23,7 +23,8 @@ enum class COLLISION_CHECK_TYPE
 	INHOLE,
 	ATTACK_BULLET_ONCE,
 	ATTACK_BULLET_ASSAULT,
-	ATTACK_AREA
+	ATTACK_AREA,
+	COLLISION_OBJECT
 };
 enum class BG_TYPE
 {
@@ -85,14 +86,15 @@ public:
 	vector<Vector2>		mBGImagePos;
 	vector<ObImage*>	mImage;
 	vector<Vector2>		mImagePos;
-	ObImage* mCollider;
+	ObImage*			mCollider;
 	wstring				mImageFName;
 	wstring				mColFName;
 	vector<Enemy*>		mEnemyList;
 	vector<Portal>		mPortalList;
 	BG_TYPE				mBGType;
+	string				mBGMkey;
 public:
-	Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName);
+	Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName, bool nonScale = false);
 	void Init();
 	void Update();
 	//player 좌표에 따라 main camera 위치와 배경을 조정합니다
@@ -101,33 +103,48 @@ public:
 	void SetImagePos(Vector2 pos);
 	void SetBGImagePos(Vector2 pos);
 	void AddImage(wstring _stageImgName, Vector2 imagePos);
-	void AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame = 1, bool isVertical = false);
+	void AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame = 1, bool isVertical = false, bool nonScale = false);
 	void AddEnemy(Enemy* enemy);
 	void AddPortal(Vector2 pos, wstring _destStageName, int _initPosNum = 0);
 	bool PortalCollisionCheck(GameObject* col);
-	void EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType = COLLISION_CHECK_TYPE::INHOLE, int damage = 0);
+	void EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType = COLLISION_CHECK_TYPE::INHOLE, int damage = 0, bool attackBoss = true);
 	bool EnemyInholingCheck();
 };
 
-struct ComboMap
+struct Effect
 {
-	int comboMaps[MAX_COMBO_HISTORY];
-	int comboLength = 0;
+	ObImage*	image;
+	float		lifeTime;
+	float		maxLifeTime;
+	Effect(ObImage* _image, float _lifeTime) : image(_image), lifeTime(0), maxLifeTime(_lifeTime) {}
 };
 
 class GameManager {
 public:
+	static int		tmpPosListNum;
+	static wstring	tmpStageImgName;
+
 	static int	Score;
 	static bool DebugMode;
 	static Stage* MainStage;
 	static Player* MainPlayer;
 	static vector<Stage*> StageList;
+	static vector<Effect*> Effect_SpreadStar;
 public:
+	static void Init();
+	static void InitEffect(Effect* effect);
+	static void	ActiveEffect(GameObject* ob, Vector2 pos = Vector2(0,0));
+	static void Update();
+	static void Render();
 	static bool IsColorMatch(Color& cl, float r, float g, float b, float a = 255);
 	static bool ChangeMainStage(wstring _stageImgName, int posListNum = 0);
 	static Color GetPointColor(GameObject* gameObject);
 };
-
+struct ComboMap
+{
+	int comboMaps[MAX_COMBO_HISTORY];
+	int comboLength = 0;
+};
 class MecanimManager
 {
 public:
@@ -140,13 +157,16 @@ public:
 
 class UIManager {
 public:
+	static ObRect*	UI_fadescreen;
 	static ObImage* UI_standard;
 	static ObImage* UI_enemy;
-	static ObRect* player_HpBar;
-	static ObRect* enemy_HpBar;
-	static ObRect* backfaceUI;
+	static ObRect*	player_HpBar;
+	static ObRect*	enemy_HpBar;
+	static ObRect*	backfaceUI;
+	static bool		turnOn;
 public:
 	static void Init();
 	static void Update();
 	static void Render(Camera* camUI);
+	static void FadeScreen(bool _turnOn, wstring stageName, int num);
 };

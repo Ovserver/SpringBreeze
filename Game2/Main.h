@@ -4,13 +4,7 @@
 #define NUM_SCORETEXT 6
 #define NUM_SAFETYTEXT 2
 
-enum StageColliderNum
-{
-	STAGE_1_1_GROUND = 8,
-	STAGE_1_1_WALL_L = 5,
-	STAGE_1_1_WALL_R = 3,
-	STAGE_1_1_SLOPE = 1,
-};
+#define STAGE_VEC_END GameManager::StageList[GameManager::StageList.size() - 1]
 
 enum class FoodType {
 	HP, FOOLHP, ONEUP

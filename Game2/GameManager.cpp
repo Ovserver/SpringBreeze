@@ -4,19 +4,24 @@
 #include "GameManager.h"
 #include "Player.h"
 
+int				GameManager::tmpPosListNum = 0;
+wstring			GameManager::tmpStageImgName;
 int				MecanimManager::ComboHistory[MAX_COMBO_HISTORY] = { 0 };
 bool			GameManager::DebugMode = false;
-Stage* GameManager::MainStage = nullptr;
-Player* GameManager::MainPlayer = nullptr;
+Stage*			GameManager::MainStage = nullptr;
+Player*			GameManager::MainPlayer = nullptr;
 vector<Stage*>	GameManager::StageList;
+vector<Effect*> GameManager::Effect_SpreadStar;
 
-ObImage* UIManager::UI_standard = nullptr;
-ObImage* UIManager::UI_enemy = nullptr;
-ObRect* UIManager::player_HpBar = nullptr;
-ObRect* UIManager::enemy_HpBar = nullptr;
-ObRect* UIManager::backfaceUI = nullptr;
+ObRect*		UIManager::UI_fadescreen = nullptr;
+ObImage*	UIManager::UI_standard = nullptr;
+ObImage*	UIManager::UI_enemy = nullptr;
+ObRect*		UIManager::player_HpBar = nullptr;
+ObRect*		UIManager::enemy_HpBar = nullptr;
+ObRect*		UIManager::backfaceUI = nullptr;
+bool		UIManager::turnOn = true;
 
-Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName)
+Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgName, bool nonScale)
 {
 	mCamLock = false;
 	mCamLockEventObject = nullptr;
@@ -31,16 +36,16 @@ Stage::Stage(wstring _stageImgName, wstring _stageColName, wstring _stageBGImgNa
 	mBGImage.push_back(new ObImage());
 	mBGImage[0]->LoadFile(_stageBGImgName);
 
-	mImage[0]->SetScale().x = mImage[0]->imageSize.x * IMG_SCALE;
-	mImage[0]->SetScale().y = mImage[0]->imageSize.y * IMG_SCALE;
+	mImage[0]->SetScale().x = mImage[0]->imageSize.x * (nonScale ? 1 : IMG_SCALE);
+	mImage[0]->SetScale().y = mImage[0]->imageSize.y * (nonScale ? 1 : IMG_SCALE);
 	mImage[0]->SetPivot() = OFFSET_LT;
 
-	mCollider->SetScale().x = mImage[0]->imageSize.x * IMG_SCALE;
-	mCollider->SetScale().y = mImage[0]->imageSize.y * IMG_SCALE;
+	mCollider->SetScale().x = mImage[0]->imageSize.x * (nonScale ? 1 : IMG_SCALE);
+	mCollider->SetScale().y = mImage[0]->imageSize.y * (nonScale ? 1 : IMG_SCALE);
 	mCollider->SetPivot() = OFFSET_LT;
 
-	mBGImage[0]->SetScale().x = mBGImage[0]->imageSize.x * IMG_SCALE;
-	mBGImage[0]->SetScale().y = mBGImage[0]->imageSize.y * IMG_SCALE;
+	mBGImage[0]->SetScale().x = mBGImage[0]->imageSize.x * (nonScale ? 1 : IMG_SCALE);
+	mBGImage[0]->SetScale().y = mBGImage[0]->imageSize.y * (nonScale ? 1 : IMG_SCALE);
 
 	mImagePos.push_back(Vector2(0, 0));
 	mBGImagePos.push_back(Vector2(0, 0));
@@ -155,13 +160,13 @@ void Stage::AddImage(wstring _stageImgName, Vector2 imagePos)
 	mImage.push_back(tmp);
 	mImagePos.push_back(imagePos);
 }
-void Stage::AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame, bool isVertical)
+void Stage::AddBGImage(wstring _stageImgName, Vector2 imagePos, int frame, bool isVertical, bool nonScale)
 {
 	ObImage* tmp = new ObImage();
 	tmp->LoadFile(_stageImgName);
 	tmp->SetWorldPos(imagePos * IMG_SCALE);
-	tmp->SetScale().x = tmp->imageSize.x / (!isVertical ? frame : 1) * IMG_SCALE;
-	tmp->SetScale().y = tmp->imageSize.y / (isVertical ? frame : 1) * IMG_SCALE;
+	tmp->SetScale().x = tmp->imageSize.x / (!isVertical ? frame : 1) * (nonScale ? 1 : IMG_SCALE);
+	tmp->SetScale().y = tmp->imageSize.y / (isVertical ? frame : 1) * (nonScale ? 1 : IMG_SCALE);
 	if (isVertical) { tmp->uv.w = 1.0f / frame; tmp->maxFrame.y = frame; }
 	else { tmp->uv.z = 1.0f / frame; tmp->maxFrame.x = frame; }
 	mBGImage.push_back(tmp);
@@ -184,25 +189,35 @@ bool Stage::PortalCollisionCheck(GameObject* col)
 	{
 		if (mPortalList[i].rect.Intersect(col))
 		{
-			GameManager::ChangeMainStage(mPortalList[i].destStageFname, mPortalList[i].initPosNum);
+			SOUND->Stop("portal");
+			SOUND->Play("portal");
+			UIManager::FadeScreen(false, mPortalList[i].destStageFname, mPortalList[i].initPosNum);
 			return true;
 		}
 	}
 	return false;
 }
-void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType, int damage)
+void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType, int damage,bool attackBoss)
 {
 	NeutralObj* neutraltmp = (NeutralObj*)col;
+	Player* playertmp = (Player*)col;
 	for (size_t i = 0; i < mEnemyList.size(); i++)
 	{
-		if (mEnemyList[i]->isVisible && col->Intersect(mEnemyList[i]))
+		if (mEnemyList[i]->isVisible && mEnemyList[i]->hp > 0 && col->Intersect(mEnemyList[i]))
 		{
 			if (!mEnemyList[i]->isStasisType && checkType == COLLISION_CHECK_TYPE::INHOLE)
 				mEnemyList[i]->isInhole = true;
 			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ONCE)
 			{
-				mEnemyList[i]->Damage(damage);
-				col->isVisible = false;
+				if (!attackBoss && mEnemyList[i]->GetSerialName() == ENEMY_SERIAL_NAME::WHISPY_WOOD)
+				{
+
+				}
+				else
+				{
+					mEnemyList[i]->Damage(damage);
+					col->isVisible = false;
+				}
 				return;
 			}
 			if (checkType == COLLISION_CHECK_TYPE::ATTACK_BULLET_ASSAULT)
@@ -216,17 +231,23 @@ void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType,
 				{
 					for (size_t j = 0; j < neutraltmp->interactObjList.size(); j++)
 					{
-						//cout << neutraltmp->interactObjList[i] << " assault " << mEnemyList[i] << endl;
 						if (neutraltmp->interactObjList[j] == mEnemyList[i])
-						{
 							break;
-						}
 						else
 						{
 							mEnemyList[i]->Damage(damage);
 							neutraltmp->interactObjList.push_back(mEnemyList[i]);
 						}
 					}
+				}
+			}
+			if (checkType == COLLISION_CHECK_TYPE::COLLISION_OBJECT)
+			{
+				if (!mEnemyList[i]->isInhole && mEnemyList[i]->GetSerialName() != ENEMY_SERIAL_NAME::WHISPY_WOOD)
+				{
+					mEnemyList[i]->Damage(5);
+					if (playertmp->slideTime <= 0)
+						playertmp->Damage(15);
 				}
 			}
 		}
@@ -268,6 +289,88 @@ bool MecanimManager::ComboMatch(ComboMap* comboMap)
 	return true;
 }
 
+void GameManager::Init()
+{
+	SOUND->AddSound("spit.wav", "spitout");
+	SOUND->AddSound("spit.wav", "spitout");
+	SOUND->AddSound("slide.wav", "slide");
+	SOUND->AddSound("sprint.wav", "dash");
+	SOUND->AddSound("star-hit.wav", "starbulletend");
+	SOUND->AddSound("suck_long.wav", "inhole");
+	SOUND->AddSound("inholeit.wav", "inholeit");
+	SOUND->AddSound("swallow.wav", "swallow");
+	SOUND->AddSound("jump.wav", "jump");
+	SOUND->AddSound("fly.wav", "hover");
+	SOUND->AddSound("fly-spit.wav", "hoverend");
+	SOUND->AddSound("hurt.wav", "ouch");
+	SOUND->AddSound("hit2.wav", "attack");
+	SOUND->AddSound("boss-defeat.wav", "bossdefeat");
+	SOUND->AddSound("enter-door.wav", "portal");
+
+	SOUND->AddSound("bg_spring_breeze.mp3", "title", true);
+	SOUND->AddSound("bg_greengreens_intro.mp3", "stage1_intro");
+	SOUND->AddSound("bg_greengreens_loop.mp3", "stage1_loop", true);
+	SOUND->AddSound("bg_boss_battle_intro.mp3", "boss_intro");
+	SOUND->AddSound("bg_boss_battle_loop.mp3", "boss_loop", true);
+
+	for (size_t i = 0; i < 10; i++)
+	{
+		ObImage* temp = new ObImage();
+		temp->LoadFile(L"effect_spreadstar.png");
+		temp->SetScale().x = temp->imageSize.x / 5.0f * IMG_SCALE;
+		temp->SetScale().y = temp->imageSize.y * IMG_SCALE;
+		temp->maxFrame.x = 5;
+		temp->ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+		temp->isVisible = false;
+		Effect_SpreadStar.push_back(new Effect(temp,0.3f));
+	}
+}
+
+void GameManager::InitEffect(Effect* effect)
+{
+	effect->image->ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+	effect->image->isVisible = true;
+}
+
+void GameManager::ActiveEffect(GameObject* ob, Vector2 pos)
+{
+	for (size_t i = 0; i < 10; i++)
+	{
+		if (!Effect_SpreadStar[i]->image->isVisible)
+		{
+			cout << "true" << endl;
+			Effect_SpreadStar[i]->image->SetWorldPos(ob->GetWorldPos() + pos);
+			Effect_SpreadStar[i]->image->isVisible = true;
+			Effect_SpreadStar[i]->image->ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
+			Effect_SpreadStar[i]->lifeTime = Effect_SpreadStar[i]->maxLifeTime;
+			return;
+		}
+	}
+}
+
+void GameManager::Update()
+{
+	for (size_t i = 0; i < 10; i++)
+	{
+		if (Effect_SpreadStar[i]->lifeTime > 0)
+		{
+			Effect_SpreadStar[i]->lifeTime -= DELTA;
+		}
+		if (Effect_SpreadStar[i]->lifeTime <= 0)
+		{
+			Effect_SpreadStar[i]->image->isVisible = false;
+		}
+	}
+}
+
+void GameManager::Render()
+{
+	for (size_t i = 0; i < 10; i++)
+	{
+		Effect_SpreadStar[i]->image->Render();
+	}
+}
+
 bool GameManager::IsColorMatch(Color& cl, float r, float g, float b, float a)
 {
 	if (cl.x == r && cl.y == g && cl.z == b)
@@ -282,9 +385,17 @@ bool GameManager::ChangeMainStage(wstring _stageImgName, int posListNum)
 	{
 		if (StageList[i]->mImageFName == _stageImgName)
 		{
+			if (MainStage->mBGMkey != StageList[i]->mBGMkey)
+			{
+				SOUND->Stop(MainStage->mBGMkey);
+				SOUND->Play(StageList[i]->mBGMkey);
+			}
 			MainStage = StageList[i];
 			MainStage->Init();
 			MainPlayer->SetWorldPos(MainStage->mPlayerInitPos[posListNum]);
+			MainPlayer->InitAnimState();
+			tmpStageImgName = L"";
+			tmpPosListNum = 0;
 			return true;
 		}
 	}
@@ -319,11 +430,16 @@ Color GameManager::GetPointColor(GameObject* gameObject)
 }
 void UIManager::Init()
 {
+	UI_fadescreen = new ObRect();
 	UI_standard = new ObImage();
 	UI_enemy = new ObImage();
 	player_HpBar = new ObRect();
 	enemy_HpBar = new ObRect();
 	backfaceUI = new ObRect();
+
+	UI_fadescreen->SetScale().x = app.GetWidth();
+	UI_fadescreen->SetScale().y = app.GetHeight();
+	UI_fadescreen->color = Color(0, 0, 0, 0);
 
 	UI_standard->LoadFile(L"UI_normal.png");
 	UI_standard->SetScale().x = UI_standard->imageSize.x * IMG_SCALE;
@@ -361,13 +477,38 @@ void UIManager::Init()
 
 void UIManager::Update()
 {
+	player_HpBar->SetScale().x = MAINPLAYER->hp / (float)PLAYER_MAX_HP * (60.0f * IMG_SCALE);
+	if (!turnOn && UI_fadescreen->color.w < 0.5f)
+	{
+		UI_fadescreen->color.w += DELTA * 1.5f;
+	}
+	if (!turnOn && UI_fadescreen->color.w >= 0.5f)
+	{
+		GameManager::ChangeMainStage(GameManager::tmpStageImgName, GameManager::tmpPosListNum);
+		turnOn = true;
+	}
+	if (turnOn && UI_fadescreen->color.w > 0.0f)
+	{
+		UI_fadescreen->color.w -= DELTA * 1.5f;
+	}
 }
 
 void UIManager::Render(Camera* camUI)
 {
-	backfaceUI->Render(camUI);
-	player_HpBar->Render(camUI);
-	//enemy_HpBar->Render(camUI);
-	//UI_enemy->Render(camUI);
-	UI_standard->Render(camUI);
+	if (MAINSTAGE->mImageFName != L"empty.png")
+	{
+		backfaceUI->Render(camUI);
+		player_HpBar->Render(camUI);
+		//enemy_HpBar->Render(camUI);
+		//UI_enemy->Render(camUI);
+		UI_standard->Render(camUI);
+	}
+	UI_fadescreen->Render(camUI);
+}
+
+void UIManager::FadeScreen(bool _turnOn, wstring fname, int num)
+{
+	turnOn = _turnOn;
+	GameManager::tmpStageImgName = fname;
+	GameManager::tmpPosListNum = num;
 }

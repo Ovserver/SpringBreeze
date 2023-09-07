@@ -7,15 +7,18 @@
 void Enemy::Init()
 {
 	SetWorldPos(initPos);
+
 	hp = maxHp;
 	accel = 1;
 	isStay = false;
 	isDamage = false;
 	isInhole = false;
 	upVector = 0;
+	invisibleTime = 0;
+	invisibleTimeInterval = 0;
 	if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
 	{
-		fowardVector = 1;
+		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
 		isMove = true;
@@ -32,7 +35,7 @@ void Enemy::Init()
 		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
 		enemy_move.SetPivot() = OFFSET_B;
 		enemy_move.maxFrame.x = 2;
-		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 8);
+		enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 4);
 
 		enemy_ouch.SetScale().x = enemy_ouch.imageSize.x * IMG_SCALE;
 		enemy_ouch.SetScale().y = enemy_ouch.imageSize.y * IMG_SCALE;
@@ -64,7 +67,6 @@ void Enemy::Init()
 			enemy_move.ChangeAnim(ANIMSTATE::LOOP, 1.0f / 12);
 		else
 			enemy_move.ChangeAnim(ANIMSTATE::REVERSE_LOOP, 1.0f / 12);
-
 		SetScale().x = enemy_Idle.GetScale().x;
 		SetScale().y = enemy_Idle.GetScale().y;
 	}
@@ -74,6 +76,29 @@ void Enemy::Update()
 {
 	if (!isVisible)
 		return;
+	if (deathAnimTime > 0) deathAnimTime -= DELTA;
+	if (deathAnimTime <= 0 && hp <= 0)
+	{
+		GameManager::ActiveEffect(this, UP * 4 * IMG_SCALE);
+		isVisible = false;
+	}
+	if (invisibleTime > 0)
+	{
+		invisibleTime -= DELTA;
+		attackUpVector += DELTA * 1.0f;
+		if (LANDING_AREA)
+		{
+			while (LANDING_AREA)
+			{
+				MoveWorldPos(UP);
+				UPDATE_COLOR;
+			}
+			attackUpVector *= -1;
+		}
+		MoveWorldPos(DOWN * DELTA * 100.0f * attackUpVector);
+		MoveWorldPos(RIGHT * DELTA * 100.0f * attackFowardVector);
+	}
+
 	if (isInhole)
 	{
 		Vector2 dir = MAINPLAYER->GetWorldPos() - GetWorldPos();
@@ -111,13 +136,15 @@ void Enemy::Update()
 				}
 			}
 		}
-		else
+		else if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
 		{
 			upVector += DELTA * 15.0f;
 
 			if (LANDING_AREA && upVector > 0)
 			{
 				upVector = 0;
+				if (invisibleTime <= 0)
+					isDamage = false;
 			}
 			if (upVector > 3.5f) upVector = 3.5f;
 
@@ -160,11 +187,11 @@ void Enemy::LateUpdate()
 		((initPos.x > app.maincam->GetWorldPos().x - app.GetHalfWidth() * 1.3f &&
 			initPos.x < app.maincam->GetWorldPos().x - app.GetHalfWidth() * 1.2f) ||
 			(initPos.x < app.maincam->GetWorldPos().x + app.GetHalfWidth() * 1.3f &&
-			initPos.x > app.maincam->GetWorldPos().x + app.GetHalfWidth() * 1.2f) ||
+				initPos.x > app.maincam->GetWorldPos().x + app.GetHalfWidth() * 1.2f) ||
 			(initPos.y > app.maincam->GetWorldPos().y - app.GetHalfHeight() * 1.3f &&
-			initPos.y < app.maincam->GetWorldPos().y - app.GetHalfHeight() * 1.2f) ||
+				initPos.y < app.maincam->GetWorldPos().y - app.GetHalfHeight() * 1.2f) ||
 			(initPos.y < app.maincam->GetWorldPos().y + app.GetHalfHeight() * 1.3f &&
-			initPos.y > app.maincam->GetWorldPos().y + app.GetHalfHeight() * 1.2f)) &&
+				initPos.y > app.maincam->GetWorldPos().y + app.GetHalfHeight() * 1.2f)) &&
 		(GetWorldPos().x < app.maincam->GetWorldPos().x - app.GetHalfWidth() * 1.15f ||
 			GetWorldPos().x > app.maincam->GetWorldPos().x + app.GetHalfWidth() * 1.15f ||
 			GetWorldPos().y < app.maincam->GetWorldPos().y - app.GetHalfHeight() * 1.15f ||
@@ -234,11 +261,24 @@ void Enemy::Render()
 
 void Enemy::Damage(int value)
 {
-	hp -= value;
-	cout << value << endl;
+	if (invisibleTime <= 0)
+	{
+		SOUND->Stop("attack");
+		SOUND->Play("attack");
+		isDamage = true;
+		hp -= value;
+		invisibleTimeInterval = value * 0.1f;
+		invisibleTime = invisibleTimeInterval;
+		attackUpVector = -2.2f;
+		if (MAINPLAYER->GetWorldPos().x < GetWorldPos().x)
+			attackFowardVector = 2.2f;
+		else
+			attackFowardVector = -2.2f;
+	}
 	if (hp <= 0)
 	{
-		isVisible = false;
+		deathAnimTime = 0.6f;
+		invisibleTime = deathAnimTime;
 	}
 }
 

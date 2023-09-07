@@ -7,10 +7,10 @@
 
 WhispyWood::WhispyWood()
 {
-	maxHp = 60;
+	maxHp = 100;
 	hp = maxHp;
 	isStasisType = true;
-	
+
 	initPos = Vector2(197, -660) * IMG_SCALE;
 	SetWorldPos(initPos);
 	serialName = ENEMY_SERIAL_NAME::WHISPY_WOOD;
@@ -69,11 +69,13 @@ void WhispyWood::Update()
 {
 	if (MAINSTAGE->mImageFName == L"stage_1-boss.png" && MAINSTAGE->mCamLock)
 		isActive = true;
+	if (hp <= 0) isActive = false;
 	if (isActive)
 	{
+		if (invisibleTime > 0)	invisibleTime -= DELTA;
+		else if (invisibleTime <= 0) isDamage = false; 
 		pattern1_Time += DELTA;
-		if (pattern1_cooldown > 0)
-			pattern1_cooldown -= DELTA;
+		if (pattern1_cooldown > 0)	pattern1_cooldown -= DELTA;
 		if (pattern1_Time > pattern1_Time_Interval)
 		{
 			if (pt1count < 3 && pattern1_cooldown <= 0)
@@ -104,13 +106,32 @@ void WhispyWood::LateUpdate()
 {
 }
 
+void WhispyWood::Damage(int value)
+{
+	if(invisibleTime <= 0)
+	{
+		if (hp > 0)
+			hp -= value;
+		SOUND->Stop("attack");
+		SOUND->Play("attack");
+		invisibleTimeInterval = value * 0.05f;
+		invisibleTime = invisibleTimeInterval;
+		isDamage = true;
+		if (hp <=0)
+			SOUND->Play("bossdefeat");
+		cout << "damage / " << hp << isDamage << endl;
+	}
+}
+
 void WhispyWood::Render()
 {
 	col.Render();
 	if (hp <= 0)
 		enemy_over.Render();
 	else if (isDamage)
+	{
 		enemy_ouch.Render();
+	}
 	else if (atkTime > 0)
 		enemy_attack.Render();
 	else
