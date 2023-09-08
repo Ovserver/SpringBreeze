@@ -804,9 +804,6 @@ void Player::Update()
 	}
 	if (MAINSTAGE->mCamLock)
 	{
-		cout << app.maincam->GetWorldPos().x << "  " << app.maincam->GetWorldPos().y << endl;
-		cout << GetWorldPos().x << "  " << GetWorldPos().y << endl;
-
 		if (GetWorldPos().x < app.maincam->GetWorldPos().x - app.GetHalfWidth())
 			SetWorldPosX(app.maincam->GetWorldPos().x - app.GetHalfWidth());
 		//SetWorldPosX(-app.maincam->GetWorldPos().x);

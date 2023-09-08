@@ -8,7 +8,7 @@
 
 WhispyWood::WhispyWood()
 {
-	maxHp = 10;
+	maxHp = 80;
 	hp = maxHp;
 	isStasisType = true;
 
