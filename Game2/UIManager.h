@@ -1,13 +1,15 @@
 #pragma once
 class UIManager {
 public:
-	static ObRect* UI_fadescreen;
+	static bool		turnOn;
+	static float	waveTime;
+	static Vector2	origin;
+	static ObRect*	UI_fadescreen;
 	static ObImage* UI_standard;
 	static ObImage* UI_enemy;
-	static ObRect* player_HpBar;
-	static ObRect* enemy_HpBar;
-	static ObRect* backfaceUI;
-	static bool		turnOn;
+	static ObRect*	player_HpBar;
+	static ObRect*	enemy_HpBar;
+	static ObRect*	backfaceUI;
 public:
 	static void Init();
 	static void Update();

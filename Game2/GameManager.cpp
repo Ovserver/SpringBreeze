@@ -10,8 +10,8 @@ int				GameManager::Score = 0;
 int				GameManager::tmpPosListNum = 0;
 wstring			GameManager::tmpStageImgName;
 bool			GameManager::DebugMode = false;
-Stage*			GameManager::MainStage = nullptr;
-Player*			GameManager::MainPlayer = nullptr;
+Stage* GameManager::MainStage = nullptr;
+Player* GameManager::MainPlayer = nullptr;
 vector<Stage*>	GameManager::StageList;
 vector<Effect*> GameManager::Effect_SpreadStar;
 
@@ -40,6 +40,8 @@ void GameManager::Init()
 	SOUND->AddSound("bg_greengreens_loop.mp3", "stage1_loop", true);
 	SOUND->AddSound("bg_boss_battle_intro.mp3", "boss_intro");
 	SOUND->AddSound("bg_boss_battle_loop.mp3", "boss_loop", true);
+	SOUND->AddSound("bg_victory_dance.mp3", "clear");
+	SOUND->AddSound("bg_healthover.mp3", "healthover");
 
 	for (size_t i = 0; i < 10; i++)
 	{
@@ -50,7 +52,7 @@ void GameManager::Init()
 		temp->maxFrame.x = 5;
 		temp->ChangeAnim(ANIMSTATE::ONCE, 1.0f / 18);
 		temp->isVisible = false;
-		Effect_SpreadStar.push_back(new Effect(temp,0.3f));
+		Effect_SpreadStar.push_back(new Effect(temp, 0.3f));
 	}
 }
 
@@ -119,6 +121,12 @@ bool GameManager::ChangeMainStage(wstring _stageImgName, int posListNum)
 				SOUND->Play(StageList[i]->mBGMkey);
 			}
 			MainStage = StageList[i];
+			if (MainStage->mImageFName == L"empty.png")
+			{
+				MAINPLAYER->hp = 100;
+				MAINPLAYER->isPortaling = true; 
+				Score = 0;
+			}
 			MainStage->Init();
 			MainPlayer->SetWorldPos(MainStage->mPlayerInitPos[posListNum]);
 			MainPlayer->InitAnimState();

@@ -201,6 +201,7 @@ void Stage::EnemyCollisionCheck(GameObject* col, COLLISION_CHECK_TYPE checkType,
 				else
 				{
 					mEnemyList[i]->Damage(damage);
+					GameManager::ActiveEffect(col, Vector2(0, 10));
 					col->isVisible = false;
 				}
 				return;

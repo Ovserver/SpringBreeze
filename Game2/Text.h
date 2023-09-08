@@ -4,7 +4,7 @@
 class Text : public ObRect
 {
 	ObRect	textRect[TEXTRECT_LEN];
-	Color	tColor = Color(1, 1, 1);
+	Color	tColor = Color(0, 0, 0);
 public:
 	int		value;
 	float	scaler;
@@ -96,7 +96,6 @@ void Text::Render(Camera* cam)
 		textRect[5].Render(cam);
 		textRect[6].Render(cam);
 	}
-	cout << textRect[0].GetWorldPos().x << "  " << textRect[0].GetWorldPos().y << endl;
 }
 
 void Text::Update()

@@ -49,7 +49,7 @@ public:
 	bool				testAnimFSM;
 	int					hp;
 	void*				currentAnimGroup;
-	float		slideTime;
+	float				slideTime;
 	const int			maxObjectNum = 5;
 	Color				pointColor;
 	PLAYER_COPY_STATE	copyState;
@@ -82,6 +82,7 @@ private:
 	bool		jumpable;
 	bool		lockInLeft;
 	bool		lockInRight;
+	float		deathTime = 1;
 	const float	slideTimeInterval = 0.6f;
 	float		slidePower;
 	float		upVector;

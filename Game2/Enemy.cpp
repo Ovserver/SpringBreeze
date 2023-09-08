@@ -10,7 +10,6 @@ void Enemy::Init()
 {
 	SetWorldPos(initPos);
 
-	hp = maxHp;
 	accel = 1;
 	isStay = false;
 	isDamage = false;
@@ -20,6 +19,7 @@ void Enemy::Init()
 	invisibleTimeInterval = 0;
 	if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO)
 	{
+		maxHp = 10;
 		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
@@ -48,6 +48,7 @@ void Enemy::Init()
 	}
 	if (serialName == ENEMY_SERIAL_NAME::WADDLE_DEE)
 	{
+		maxHp = 10;
 		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
@@ -76,6 +77,7 @@ void Enemy::Init()
 	}
 	if (serialName == ENEMY_SERIAL_NAME::BRONTO_BURT)
 	{
+		maxHp = 10;
 		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
@@ -104,6 +106,7 @@ void Enemy::Init()
 	}
 	if (serialName == ENEMY_SERIAL_NAME::GRIZZO)
 	{
+		maxHp = 40;
 		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
@@ -132,6 +135,7 @@ void Enemy::Init()
 	}
 	if (serialName == ENEMY_SERIAL_NAME::TWIZZY)
 	{
+		maxHp = 10;
 		fowardVector = 0.4f;
 		isVisible = true;
 		isStasisType = false;
@@ -143,7 +147,7 @@ void Enemy::Init()
 		enemy_Idle.SetScale().x = enemy_Idle.imageSize.x / 3.0f * IMG_SCALE;
 		enemy_Idle.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
 		enemy_Idle.SetPivot() = OFFSET_B;
-		enemy_Idle.uv.z = 1.0f/3;
+		enemy_Idle.uv.z = 1.0f / 3;
 
 		enemy_move.SetScale().x = enemy_Idle.imageSize.x / 3.0f * IMG_SCALE;
 		enemy_move.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
@@ -184,8 +188,9 @@ void Enemy::Init()
 		SetScale().x = enemy_Idle.GetScale().x;
 		SetScale().y = enemy_Idle.GetScale().y;
 	}
+	hp = maxHp;
 }
-
+bool upSwitch = false;
 void Enemy::Update()
 {
 	if (!isVisible)
@@ -250,7 +255,9 @@ void Enemy::Update()
 				}
 			}
 		}
-		else if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO || serialName == ENEMY_SERIAL_NAME::WADDLE_DEE)
+		else if (serialName == ENEMY_SERIAL_NAME::WADDLE_DOO ||
+			serialName == ENEMY_SERIAL_NAME::WADDLE_DEE ||
+			serialName == ENEMY_SERIAL_NAME::GRIZZO)
 		{
 			upVector += DELTA * 15.0f;
 
@@ -277,40 +284,32 @@ void Enemy::Update()
 				isRight = true;
 				while (INTERPOL_AREA_PULL_RIGHT) {
 					MoveWorldPos(RIGHT);
+					UPDATE_COLOR;
+				}
+			}
+			else if (INTERPOL_AREA_RISE)
+			{
+				isRight = true;
+				while (INTERPOL_AREA_RISE) {
+					MoveWorldPos(UP);
 					UPDATE_COLOR;
 				}
 			}
 		}
 		else
 		{
-			upVector += DELTA * 15.0f;
+			if (upVector > 3.5f)
+				upSwitch = true;
+			else if (upVector < -3.5f)
+				upSwitch = false;
+			if (upSwitch) upVector -= DELTA * 5.0f;
+			else upVector += DELTA * 5.0f;
 
-			if (LANDING_AREA && upVector > 0)
-			{
-				upVector = 0;
-				if (invisibleTime <= 0)
-					isDamage = false;
-			}
-			if (upVector > 3.5f) upVector = 3.5f;
+			if (invisibleTime <= 0)
+				isDamage = false;
 
-			MoveWorldPos(DOWN * DELTA * 100.0f * upVector);
+			MoveWorldPos(DOWN * DELTA * 50.0f * upVector);
 			MoveWorldPos(RIGHT * DELTA * 100.0f * fowardVector * (isRight ? 1 : -1));
-			if (INTERPOL_AREA_PULL_LEFT)
-			{
-				isRight = false;
-				while (INTERPOL_AREA_PULL_LEFT) {
-					MoveWorldPos(LEFT);
-					UPDATE_COLOR;
-				}
-			}
-			else if (INTERPOL_AREA_PULL_RIGHT)
-			{
-				isRight = true;
-				while (INTERPOL_AREA_PULL_RIGHT) {
-					MoveWorldPos(RIGHT);
-					UPDATE_COLOR;
-				}
-			}
 		}
 
 	}
@@ -410,6 +409,7 @@ void Enemy::Damage(int value)
 {
 	if (invisibleTime <= 0)
 	{
+		GameManager::Score += 100;
 		SOUND->Stop("attack");
 		SOUND->Play("attack");
 		isDamage = true;
@@ -424,6 +424,7 @@ void Enemy::Damage(int value)
 	}
 	if (hp <= 0)
 	{
+		GameManager::Score += 500;
 		deathAnimTime = 0.6f;
 		invisibleTime = deathAnimTime;
 	}

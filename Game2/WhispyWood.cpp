@@ -4,10 +4,11 @@
 #include "NeutralObj.h"
 #include "Enemy.h"
 #include "WhispyWood.h"
+#include "UIManager.h"
 
 WhispyWood::WhispyWood()
 {
-	maxHp = 100;
+	maxHp = 10;
 	hp = maxHp;
 	isStasisType = true;
 
@@ -46,21 +47,23 @@ WhispyWood::WhispyWood()
 	enemy_over.SetPivot() = OFFSET_B;
 
 	col.SetScale().x = enemy_Idle.imageSize.x / 6.0f * IMG_SCALE;
-	col.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE;
+	col.SetScale().y = enemy_Idle.imageSize.y * IMG_SCALE * 2;
 	col.isFilled = false;
-	col.SetPivot() = OFFSET_B;
 	SetScale().x = col.GetScale().x;
 	SetScale().y = col.GetScale().y;
 	collider = COLLIDER::RECT;
-	SetPivot() = OFFSET_B;
-
 	isActive = false;
+	isVisible = true;
 	UpdateSpritePos();
 }
 
 void WhispyWood::Init()
 {
-
+	deathTime = 5;
+	hp = maxHp;
+	isVisible = true;
+	isActive = false;
+	isDamage = false;
 }
 
 int pt1count = 0;
@@ -100,6 +103,12 @@ void WhispyWood::Update()
 			}
 		}
 	}
+	else {
+		if (hp <= 0)
+		deathTime -= DELTA;
+		if (deathTime <= 0)
+			UIManager::FadeScreen(false, L"stage_1-clear.png", 0);
+	}
 }
 
 void WhispyWood::LateUpdate()
@@ -117,15 +126,21 @@ void WhispyWood::Damage(int value)
 		invisibleTimeInterval = value * 0.05f;
 		invisibleTime = invisibleTimeInterval;
 		isDamage = true;
-		if (hp <=0)
+		if (hp <= 0)
+		{
+			UIManager::waveTime = 2.0f;
+			UIManager::origin = app.maincam->GetWorldPos();
+			deathTime = 3.0f;
+			isVisible = false;
 			SOUND->Play("bossdefeat");
+		}
 		cout << "damage / " << hp << isDamage << endl;
 	}
 }
 
 void WhispyWood::Render()
 {
-	col.Render();
+	//col.Render();
 	if (hp <= 0)
 		enemy_over.Render();
 	else if (isDamage)

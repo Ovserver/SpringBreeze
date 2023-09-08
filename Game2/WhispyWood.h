@@ -19,6 +19,7 @@ public:
 	void Render();
 	void UpdateSpritePos() override;
 private:
+	float	deathTime = 1;
 	ObImage	enemy_ouch2;
 	ObImage	enemy_over;
 	ObRect	col;

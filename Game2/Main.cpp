@@ -36,9 +36,9 @@ void Main::Init()
 	STAGE_VEC_END->AddBGImage(L"stage_1_bg_1-1.png", Vector2(-96, -8) * IMG_SCALE, 4, true);
 	STAGE_VEC_END->mBGImage[1]->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6, false);
 	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::BRONTO_BURT));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::TWIZZY));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(342, -113) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(585, -65) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::BRONTO_BURT));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(800, -89) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::TWIZZY));
 	STAGE_VEC_END->AddPortal(Vector2(396, -136) * IMG_SCALE, L"stage_1-2.png");
 	STAGE_VEC_END->AddPortal(Vector2(734, -112) * IMG_SCALE, L"stage_1-3.png");
 	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(50, -100) * IMG_SCALE);
@@ -60,7 +60,7 @@ void Main::Init()
 	STAGE_VEC_END->mImage[2]->SetScale().y = STAGE_VEC_END->mImage[2]->imageSize.y * IMG_SCALE;
 	STAGE_VEC_END->mImage[2]->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6);
 	STAGE_VEC_END->mImage[2]->maxFrame.x = 6;
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(148, -158) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
 	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(128, -112) * IMG_SCALE);
 	STAGE_VEC_END->mLimitCameraPosX = Vector2(130, 132);
 	STAGE_VEC_END->mLimitCameraPosY = Vector2(-125, -115);
@@ -117,11 +117,11 @@ void Main::Init()
 	STAGE_VEC_END->mImage[9]->SetScale().y = STAGE_VEC_END->mImage[9]->imageSize.y * IMG_SCALE;
 	STAGE_VEC_END->mImage[9]->ChangeAnim(ANIMSTATE::LOOP, 1.0f / 6);
 	STAGE_VEC_END->mImage[9]->maxFrame.x = 6;
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::BRONTO_BURT));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::TWIZZY));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::GRIZZO));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(194, -148) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(460, -85) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(577, -69) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::BRONTO_BURT));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(798, -74) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::TWIZZY));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(641, -113) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::GRIZZO));
 	STAGE_VEC_END->AddPortal(Vector2(780, -111) * IMG_SCALE, L"stage_1-4.png");
 	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(50, -100) * IMG_SCALE);
 	STAGE_VEC_END->mLimitCameraPosX = Vector2(130, 758);
@@ -130,9 +130,9 @@ void Main::Init()
 
 	GameManager::StageList.push_back(new Stage(L"stage_1-4.png", L"stage_1-4_collider.png", L"stage_1_bg_3.png"));
 	STAGE_VEC_END->mBGType = BG_TYPE::ONCE;
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::GRIZZO));
-	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -77) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(254, -365) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DOO));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(129, -277) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::GRIZZO));
+	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(205, -147) * IMG_SCALE, 10, ENEMY_SERIAL_NAME::WADDLE_DEE));
 	STAGE_VEC_END->AddPortal(Vector2(180, -111) * IMG_SCALE, L"stage_1-boss.png");
 	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(104, -396) * IMG_SCALE);
 	STAGE_VEC_END->mLimitCameraPosX = Vector2(130, 230);
@@ -142,7 +142,7 @@ void Main::Init()
 	GameManager::StageList.push_back(new Stage(L"stage_1-boss.png", L"stage_1-boss_collider.png", L"stage_1_bg_3.png"));
 	STAGE_VEC_END->mBGType = BG_TYPE::ONCE;
 	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(100, -100) * IMG_SCALE);
-	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(100, -600) * IMG_SCALE);
+	//STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(100, -600) * IMG_SCALE);
 	STAGE_VEC_END->AddEnemy(new WhispyWood());
 	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(20, -570) * IMG_SCALE, 1, ENEMY_SERIAL_NAME::WHISPY_APPLE));
 	STAGE_VEC_END->AddEnemy(new Enemy(Vector2(40, -570) * IMG_SCALE, 1, ENEMY_SERIAL_NAME::WHISPY_APPLE));
@@ -157,8 +157,15 @@ void Main::Init()
 	STAGE_VEC_END->mCamLockRangePosMin = Vector2(0, -648);
 	STAGE_VEC_END->mCamLockRangePosMax = Vector2(450, -630);
 	STAGE_VEC_END->mCamLockEventObject = STAGE_VEC_END->mEnemyList[0];
-	STAGE_VEC_END->mCamLockEventType = CAM_LOCKIN_TYPE::CONTINUOS;
+	STAGE_VEC_END->mCamLockEventType = CAM_LOCKIN_TYPE::SINGLE;
 	STAGE_VEC_END->mBGMkey = "boss_loop";
+	
+	GameManager::StageList.push_back(new Stage(L"stage_1-clear.png", L"stage_1-clear_collider.png", L"stage_1_bg_3.png"));
+	STAGE_VEC_END->mBGType = BG_TYPE::ONCE;
+	STAGE_VEC_END->mPlayerInitPos.push_back(Vector2(100, -650) * IMG_SCALE);
+	STAGE_VEC_END->mLimitCameraPosX = Vector2(130, 130);
+	STAGE_VEC_END->mLimitCameraPosY = Vector2(-648, -120);
+	STAGE_VEC_END->mBGMkey = "clear";
 
 	if (!MAINPLAYER)
 	{
@@ -168,17 +175,14 @@ void Main::Init()
 	GameManager::Init();
 	MAINSTAGE = GameManager::StageList[0];
 	GameManager::ChangeMainStage(L"empty.png");
-	MAINPLAYER->isPortaling = true;
 	SOUND->Play(MAINSTAGE->mBGMkey);
 	UIManager::Init();
 	for (size_t i = 0; i < NUM_SCORETEXT; i++)
 	{
 		scoreText[i].Init();
 		scoreText[i].value = 0;
-		scoreText[i].scaler = 1;
-		//scoreText[i].SetWorldPos(Vector2(app.GetHalfWidth(),-app.GetHalfHeight()));
-		scoreText[i].Update();
-		scoreText[i].UpdateMatrix();
+		scoreText[i].scaler = 0.3f;
+		scoreText[i].SetWorldPos(Vector2(215 - i*12,-159));
 		scoreText[i].Update();
 		scoreText[i].UpdateMatrix();
 	}
@@ -188,14 +192,26 @@ void Main::Release()
 {
 
 }
+float scalers = 1;
 float posX = 0;
 float posY = 0;
+float deathTime = 8;
 void Main::Update()
 {
 	ImGui::SliderFloat("FadeScreen Alpha", &UIManager::UI_fadescreen->color.w, 0.0f, 0.5f);
 	ImGui::SliderFloat("Master Volume", &app.soundScale, 0.0f, 1.0f);
-	ImGui::SliderFloat("posx", &posX, -800.0f, 800.0f);
-	ImGui::SliderFloat("posy", &posY, -800.0f, 800.0f);
+	//ImGui::SliderFloat("posx", &posX, -800.0f, 800.0f);
+	//ImGui::SliderFloat("posy", &posY, -800.0f, 800.0f);
+	//ImGui::SliderFloat("scale", &scalers, 0.0f, 1.0f);
+
+	if (MAINSTAGE->mImageFName == L"stage_1-clear.png")
+		deathTime -= DELTA;
+	if (deathTime <= 0)
+	{
+		UIManager::FadeScreen(false, L"empty.png", 0);
+		deathTime = 8.5f;
+	}
+
 	SOUND->SetMasterVolume();
 	if (INPUT->KeyDown(VK_NEXT))
 	{
@@ -211,6 +227,7 @@ void Main::Update()
 	}
 	if (MAINSTAGE->mImageFName == L"empty.png" && INPUT->KeyDown('A'))
 		UIManager::FadeScreen(false, L"stage_1-1_another.png", 0);
+
 	if (ImGui::Button("Effect Test - Spread Star"))
 	{
 		GameManager::ActiveEffect(MAINPLAYER, UP * 10 * IMG_SCALE);
@@ -223,7 +240,6 @@ void Main::Update()
 	if (ImGui::Button("Go To Title"))
 	{
 		GameManager::ChangeMainStage(L"empty.png");
-		MAINPLAYER->isPortaling = true;
 	}
 	if (ImGui::Button("Change Stage 1-1"))
 	{
@@ -245,20 +261,25 @@ void Main::Update()
 	{
 		GameManager::ChangeMainStage(L"stage_1-boss.png");
 	}
+	if (ImGui::Button("Change Stage 1-clear"))
+	{
+		GameManager::ChangeMainStage(L"stage_1-clear.png");
+	}
 
 	MAINPLAYER->Update();
 	MAINSTAGE->Update();
 	GameManager::Update();
 	UIManager::Update();
+
 	int temp = GameManager::Score;
-	//for (size_t i = 0; i < NUM_SCORETEXT; i++)
-	//{		
-	//	scoreText[i].value = temp % 10;
-	//	temp /= 10;
-	//	scoreText[i].SetWorldPosX(posX);
-	//	scoreText[i].SetWorldPosY(posY);
-	//	scoreText[i].Update();
-	//}
+	for (size_t i = 0; i < NUM_SCORETEXT; i++)
+	{		
+		scoreText[i].value = temp % 10;
+		temp /= 10;
+		scoreText[i].SetWorldPosX(posX);
+		scoreText[i].SetWorldPosY(posY);
+		scoreText[i].Update();
+	}
 }
 
 void Main::LateUpdate()

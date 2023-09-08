@@ -401,7 +401,12 @@ void Player::Update()
 {
 	if (isPortaling)
 	{
-
+		if (hp <= 0)
+		deathTime -= DELTA;
+		if (deathTime <= 0)
+		{
+			UIManager::FadeScreen(false, L"empty.png", 0);
+		}
 	}
 	else if (attackTime > 0)
 	{
@@ -797,22 +802,24 @@ void Player::Update()
 			UPDATE_COLOR;
 		}
 	}
-	//if (MAINSTAGE->mCamLock)
-	//{
-	//	cout << app.maincam
-	//	if (GetWorldPos().x < app.maincam->GetWorldPos().x - app.GetHalfWidth())
-	//		//SetWorldPosX(app.maincam->GetWorldPos().x - app.GetHalfWidth());
-	//		SetWorldPosX(-app.maincam->GetWorldPos().x);
-	//	if (GetWorldPos().x >app.maincam->GetWorldPos().x + app.GetHalfWidth())
-	//		//SetWorldPosX(app.maincam->GetWorldPos().x + app.GetHalfWidth());
-	//		SetWorldPosX(app.maincam->GetWorldPos().x);
-	//	if (GetWorldPos().y < app.maincam->GetWorldPos().y - app.GetHalfHeight())
-	//		//SetWorldPosY(app.maincam->GetWorldPos().y - app.GetHalfWidth());
-	//		SetWorldPosY(-app.maincam->GetWorldPos().y);
-	//	if (GetWorldPos().y > app.maincam->GetWorldPos().y + app.GetHalfHeight())
-	//		//SetWorldPosY(app.maincam->GetWorldPos().y - app.GetHalfWidth());
-	//		SetWorldPosY(app.maincam->GetWorldPos().y);
-	//}
+	if (MAINSTAGE->mCamLock)
+	{
+		cout << app.maincam->GetWorldPos().x << "  " << app.maincam->GetWorldPos().y << endl;
+		cout << GetWorldPos().x << "  " << GetWorldPos().y << endl;
+
+		if (GetWorldPos().x < app.maincam->GetWorldPos().x - app.GetHalfWidth())
+			SetWorldPosX(app.maincam->GetWorldPos().x - app.GetHalfWidth());
+		//SetWorldPosX(-app.maincam->GetWorldPos().x);
+		if (GetWorldPos().x > app.maincam->GetWorldPos().x + app.GetHalfWidth())
+			SetWorldPosX(app.maincam->GetWorldPos().x + app.GetHalfWidth());
+		//SetWorldPosX(app.maincam->GetWorldPos().x);
+		if (GetWorldPos().y < app.maincam->GetWorldPos().y - app.GetHalfHeight())
+			SetWorldPosY(app.maincam->GetWorldPos().y - app.GetHalfHeight());
+		//SetWorldPosY(-app.maincam->GetWorldPos().y);
+		if (GetWorldPos().y > app.maincam->GetWorldPos().y + app.GetHalfHeight())
+			SetWorldPosY(app.maincam->GetWorldPos().y + app.GetHalfHeight());
+		//SetWorldPosY(app.maincam->GetWorldPos().y);
+	}
 	UpdateSpritePos();
 	for (size_t i = 0; i < maxObjectNum; i++)
 	{
@@ -865,7 +872,7 @@ void Player::Damage(int value)
 		attackTime = attackTimeInterval;
 		SOUND->Stop("ouch");
 		SOUND->Play("ouch");
-		invisibleTimeInterval = 0.2f + value * 0.1f;
+		invisibleTimeInterval = 0.65f;
 		attackUpVector = -0.6f * IMG_SCALE;
 		if (!isRight)
 			attackFowardVector = 0.9f * IMG_SCALE;
@@ -878,6 +885,13 @@ void Player::Damage(int value)
 				*temp = ANIM_GROUP_NORMAL::INHOLEIT_OUCH;
 			else
 				*temp = ANIM_GROUP_NORMAL::OUCH;
+		}
+		if (hp <= 0)
+		{
+			SOUND->Stop(MAINSTAGE->mBGMkey);
+			SOUND->Play("healthover");
+			isPortaling = true;
+			deathTime = 3.0f;
 		}
 	}
 }

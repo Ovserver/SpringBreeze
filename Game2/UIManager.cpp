@@ -6,13 +6,15 @@
 #include "Player.h"
 #include "UIManager.h"
 
-ObRect* UIManager::UI_fadescreen = nullptr;
-ObImage* UIManager::UI_standard = nullptr;
-ObImage* UIManager::UI_enemy = nullptr;
-ObRect* UIManager::player_HpBar = nullptr;
-ObRect* UIManager::enemy_HpBar = nullptr;
-ObRect* UIManager::backfaceUI = nullptr;
 bool		UIManager::turnOn = true;
+float		UIManager::waveTime = 0;
+Vector2		UIManager::origin;
+ObRect*		UIManager::UI_fadescreen = nullptr;
+ObImage*	UIManager::UI_standard = nullptr;
+ObImage*	UIManager::UI_enemy = nullptr;
+ObRect*		UIManager::player_HpBar = nullptr;
+ObRect*		UIManager::enemy_HpBar = nullptr;
+ObRect*		UIManager::backfaceUI = nullptr;
 
 void UIManager::Init()
 {
@@ -63,6 +65,13 @@ void UIManager::Init()
 
 void UIManager::Update()
 {
+	if (waveTime > 0)
+	{
+		waveTime -= DELTA;
+		app.maincam->SetWorldPos(origin + Vector2(RANDOM->Float(-1.0f, 1.0f)
+			, RANDOM->Float(-1.0f, 1.0f)) * 3.0f);
+	}
+
 	player_HpBar->SetScale().x = MAINPLAYER->hp / (float)PLAYER_MAX_HP * (60.0f * IMG_SCALE);
 	if (!turnOn && UI_fadescreen->color.w < 0.5f)
 	{
